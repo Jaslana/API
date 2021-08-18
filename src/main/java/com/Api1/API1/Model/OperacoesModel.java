@@ -4,9 +4,9 @@ package com.Api1.API1.Model;
 
 import com.Api1.API1.Dto.OperacoesDto;
 import com.sun.istack.NotNull;
+import org.hibernate.validator.constraints.br.CPF;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotEmpty;
 import java.time.LocalDateTime;
 
 
@@ -15,12 +15,13 @@ public class OperacoesModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Integer id;
-    @NotEmpty
+    @CPF
     public String cpf;
     @NotNull
     public double valor;
     @NotNull
     private TipoOperacaoEnum tipoOperacao;
+    @NotNull
     private LocalDateTime data = LocalDateTime.now();
     public OperacoesModel(Integer id, String cpf, double valor, TipoOperacaoEnum tipoOperacao, LocalDateTime data) {
         this.id = id;

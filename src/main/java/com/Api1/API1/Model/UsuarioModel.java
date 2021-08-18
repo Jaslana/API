@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 
@@ -25,12 +26,12 @@ public class UsuarioModel {
         @CPF (message = "Número do registro de contribuinte individual brasileiro (CPF) inválido")
         public String cpf;
         @Column(length = 50)
-//        @Pattern(regexp ="^(RUA|Rua|R.|AVENIDA|Avenida|AV.|TRAVESSA|Travessa|TRAV.|Trav.) ([a-zA-Z_\s]+)[, ]+(\d+)\s?([-/\da-zDA-Z\\ ]+)?$", RegexOptions.IgnoreCase)
+        @Pattern(regexp = "([\\w\\W]+)\\s(\\d+)", message = "Informe o nome da Rua e o número apenas.")
         @NotNull(message = "O endereço é um campo obrigatorio")
         public String endereco;
         @Column(length = 20)
         @NotNull (message = "O telefone é um campo obrigatorio")
-//        @Pattern(regexp = "(\\(?\\d{2}\\)?\\s)?(\\d{5}\\-\\d{4})")
+        @Pattern(regexp = "^(?:(?:\\+|00)?(55)\\s?)?(?:(?:\\(?[1-9][0-9]\\)?)?\\s?)?(?:((?:9\\d|[2-9])\\d{3})-?(\\d{4}))$", message = "Telefone Invalido")
         public String fone;
         @NotNull (message = "O campo tipo é um campo obrigatorio")
         public ContaEnum tipo;

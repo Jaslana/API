@@ -4,6 +4,7 @@ package com.Api1.API1.Model;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @Entity
 @Table(name = "contas")
@@ -22,15 +23,14 @@ public class ContaModel {
     @NotNull @NotEmpty
     @Column(length = 50)
     private String agencia;
+    @GeneratedValue(generator = "0")
     private Integer qtdSaques;
-
     @NotNull
     private double saldo;
-
-    @Column (nullable = false)
+    @Column
+    @NotNull @Size(min = 2,max = 2)
     private int dverif;
-
-    @Column(length = 50)
+    @Column(length = 20)
     private ContaEnum tipo;
 
     public ContaModel() {
