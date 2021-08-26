@@ -15,17 +15,17 @@ public class OperacoesModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Integer id;
-    @CPF
-    public String cpf;
+
+    public String numeroConta;
     @NotNull
     public double valor;
     @NotNull
     private TipoOperacaoEnum tipoOperacao;
     @NotNull
     private LocalDateTime data = LocalDateTime.now();
-    public OperacoesModel(Integer id, String cpf, double valor, TipoOperacaoEnum tipoOperacao, LocalDateTime data) {
+    public OperacoesModel(Integer id, String numeroConta, double valor, TipoOperacaoEnum tipoOperacao, LocalDateTime data) {
         this.id = id;
-        this.cpf = cpf;
+        this.numeroConta = numeroConta;
         this.valor = valor;
         this.tipoOperacao = tipoOperacao;
         this.data = data;
@@ -38,11 +38,11 @@ public class OperacoesModel {
     public void setId(Integer id) {
         this.id = id;
     }
-    public String getCpf() {
-        return cpf;
+    public String getNumeroConta() {
+        return numeroConta;
     }
-    public void setCpf(String cpf) {
-        this.cpf = cpf;
+    public void setNumeroConta(String numeroConta) {
+        this.numeroConta = numeroConta;
     }
     public double getValor() {
         return valor;

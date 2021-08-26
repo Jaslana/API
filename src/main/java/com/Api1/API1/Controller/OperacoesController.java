@@ -32,13 +32,10 @@ OperacoesRepository repository;
 
     @Autowired
     private OperacoesRepository operacoesRepository;
-    public OperacoesController (OperacoesRepository operacoesRepository) {
-        this.operacoesRepository = operacoesRepository;
-    }
 
-    @GetMapping("/extrato/{cpf}")
-    public List<OperacoesModel> ConsultaExtrato(@PathVariable("cpf") String cpf) {
-        return repository.findAllByCpf(cpf);
+    @GetMapping("/extrato/{nconta}")
+    public List<OperacoesModel> ConsultaExtrato(@PathVariable("nconta") String nconta) {
+        return repository.findAllByNumeroConta(nconta);
     }
 
     @PostMapping("/saque")
@@ -49,7 +46,7 @@ OperacoesRepository repository;
             //publicar saque no topico
             //metodo para registrar que o cliente efetuou o saque
             KafkaProducerSaque ks = new KafkaProducerSaque();
-            ks.EnviarDadosClienteSaque(model.getCpf());
+            ks.EnviarDadosClienteSaque(model.getNumeroConta());
             return ResponseEntity.created(uri).body(model);
         }
         return ResponseEntity.badRequest().body(model);
@@ -67,8 +64,8 @@ OperacoesRepository repository;
     }
     @PutMapping("/operacoes/transferir")
     public ResponseEntity<OperacoesModel> transferencias(@RequestBody @Valid OperacoesDto model, UriComponentsBuilder uriBuilder){
-        OperacoesModel transacaoEntrada = new OperacoesModel(model.getId(), model.getCpfEntrada(), model.getValor(), TipoOperacaoEnum.TransferenciaEntrada, LocalDateTime.now());
-        OperacoesModel transacaoSaida = new OperacoesModel(model.getId(),model.getCpfSaida(), model.getValor(),TipoOperacaoEnum.TransferenciaSaida,LocalDateTime.now());
+        OperacoesModel transacaoEntrada = new OperacoesModel(model.getId(), model.getNumeroContaEntrada(), model.getValor(), TipoOperacaoEnum.TransferenciaEntrada, LocalDateTime.now());
+        OperacoesModel transacaoSaida = new OperacoesModel(model.getId(),model.getNumeroContaSaida(), model.getValor(),TipoOperacaoEnum.TransferenciaSaida,LocalDateTime.now());
         transferirContas(transacaoEntrada);
         transferirContasSaida(transacaoSaida);
         repository.save(transacaoEntrada);
@@ -77,14 +74,14 @@ OperacoesRepository repository;
         return ResponseEntity.created(uri).body(transacaoSaida);
     }
     public ResponseEntity<OperacoesModel> validacaodesaque(@RequestBody @Valid OperacoesModel model, UriComponentsBuilder uriBuilder) throws ExecutionException, InterruptedException {
-        Optional<ContaModel> busca = Crepository.findByUsuarioCpf(model.getCpf());
+        Optional<ContaModel> busca = Crepository.findBynconta(model.getNumeroConta());
         if (busca.get().getSaldo() <= model.getValor()) {
             return ResponseEntity.badRequest().build();
         }
         sacarConta(model);
         URI uri = uriBuilder.path("/contas/{id}").buildAndExpand(model.getId()).toUri();
         KafkaProducerSaque ks = new KafkaProducerSaque();
-        ks.EnviarDadosClienteSaque(model.getCpf());
+        ks.EnviarDadosClienteSaque(model.getNumeroConta());
         return ResponseEntity.created(uri).body(model);
     }
 }

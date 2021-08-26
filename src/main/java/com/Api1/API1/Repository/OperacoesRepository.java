@@ -14,9 +14,9 @@ import java.util.Optional;
 
 public interface OperacoesRepository extends JpaRepository<OperacoesModel, Integer> {
 
-    List<OperacoesModel> findAllByCpf(String cpf);
+    List<OperacoesModel> findAllByNumeroConta(String numeroConta);
 
-    Optional<OperacoesModel> findByCpf(String cpf);
+    Optional<OperacoesModel> findByNumeroConta(String numeroConta);
 
     static List<OperacoesModel> findByDataBetweenAndNConta
             (LocalDateTime dataInicioMes, LocalDateTime dataFimMes, String numeroConta) {

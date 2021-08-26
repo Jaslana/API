@@ -11,18 +11,18 @@ import org.hibernate.validator.constraints.br.CPF;
 public class OperacoesDto {
 
     public Integer Id;
-    @CPF
-    public String cpfEntrada;
-    @CPF
-    public String cpfSaida;
+
+    public String NumeroContaEntrada;
+    public String NumeroContaSaida;
+
     @NotNull
     public double valor;
 
 
-    public OperacoesDto(Integer id, String cpfEntrada, String cpfSaida, double valor) {
+    public OperacoesDto(Integer id, String numeroContaEntrada, String numeroContaSaida, double valor) {
         this.Id = id;
-        this.cpfEntrada = cpfEntrada;
-        this.cpfSaida = cpfSaida;
+        this.NumeroContaEntrada = numeroContaEntrada;
+        this.NumeroContaSaida = numeroContaSaida;
         this.valor = valor;
 
     }

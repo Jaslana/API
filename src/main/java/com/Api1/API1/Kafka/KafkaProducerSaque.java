@@ -9,9 +9,9 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
 public class KafkaProducerSaque {
-    public void EnviarDadosClienteSaque(String Cpf) throws ExecutionException, InterruptedException {
+    public void EnviarDadosClienteSaque(String nconta) throws ExecutionException, InterruptedException {
         var producer = new org.apache.kafka.clients.producer.KafkaProducer<String, String>(properties());
-        var value = Cpf;
+        var value = nconta;
         var record = new ProducerRecord<>("Novo_Saque", value, value);
         producer.send(record, (data, ex) -> {
             if (ex != null) {
