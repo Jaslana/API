@@ -24,29 +24,43 @@ public class ContaController {
     private ContaRepository repository;
 
 
-   @GetMapping(path = "/api/contas/{cpf}")
-    public ResponseEntity consutar(@PathVariable("codigo") String cpf){
-        return repository.findByUsuarioCpf(cpf)
-                .map(record -> ResponseEntity.ok().body(record))
-                .orElse(ResponseEntity.notFound().build());
+   @GetMapping(path = "/api/contas/")
+    public ResponseEntity<?> consutar(@RequestParam String nconta){
+       Optional<ContaModel> conta = repository.findBynconta(nconta);
+       if(conta.isPresent()){
+           return ResponseEntity.ok().body(conta);
+       }else {
+           String erro = "Deu ruim, essa conta :" + nconta + "Não existe!";
+            return ResponseEntity.status(200).body(erro);
+       }
     }
 
     @PostMapping(path = "/api/contas/salvar")
-    public ResponseEntity<ContaModel> salvar(@RequestBody @Valid ContaModel contaModel,
+    public ResponseEntity<?> salvar(@RequestBody @Valid ContaModel contaModel,
                                                UriComponentsBuilder uriBuilder) {
+       Optional<ContaModel> conta = repository.findBynconta(contaModel.getNconta());
+       if (conta.isPresent()) {
+           String json = "Deu ruim , essa conta ja existe :( " + contaModel.getNconta();
+           return ResponseEntity.badRequest().body(json);
+       }
         URI uri = uriBuilder.path("/conta").buildAndExpand(contaModel.getCodigo()).toUri();
+        Integer inicio = 0;
+        contaModel.setQtdSaques(inicio);
         return ResponseEntity.created(uri).body(repository.save(contaModel));
     }
 
-    @DeleteMapping(value = "api/contas/delete/{nconta}")
-    public String delete (@PathVariable("nconta") String nconta) {
-        Optional<ContaModel> cliente = repository.findBynconta(nconta);
-        if (cliente.isPresent()) {
-            repository.delete(cliente.get());
-            return "Conta deletada " + nconta;
+    @DeleteMapping(value = "api/contas/delete/")
+    public  ResponseEntity<?> deletarConta(@RequestParam String nconta) {
+        Optional<ContaModel> conta = repository.findBynconta(nconta);
+        if (conta.isPresent()) {
+            repository.delete(conta.get());
+            String json = "Conta " + nconta + " deletada com sucesso.";
+            return ResponseEntity.accepted().body(new String[]{json, "NUMERO DA CONTA: " + conta.get().getNconta() + "."});
         } else {
-            throw new RuntimeException("Conta não exite " + nconta);
+            String json = "Conta não encontrada.";
+            return ResponseEntity.badRequest().body(json);
         }
+
     }
 
     @PostMapping(path = "api/contas/consulta")
@@ -64,10 +78,9 @@ public class ContaController {
             URI uri = uriBuilder.path("/conta").buildAndExpand(contaModel.getCodigo()).toUri();
             return ResponseEntity.created(uri).body(new ContaModelDto(contaModel));
         }
-        return  ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().build();
+
     }
-
-
 }
 
 

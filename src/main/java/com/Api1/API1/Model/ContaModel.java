@@ -1,7 +1,10 @@
 package com.Api1.API1.Model;
 
 
+import org.hibernate.validator.constraints.Length;
+
 import javax.persistence.*;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -23,20 +26,20 @@ public class ContaModel {
     @NotNull @NotEmpty
     @Column(length = 50)
     private String agencia;
-    @GeneratedValue(generator = "0")
     private Integer qtdSaques;
     @NotNull
     private double saldo;
     @Column
-    @NotNull @Size(min = 2,max = 2)
-    private int dverif;
+    @Max(value = 99)
+    @NotNull
+    private Integer dverif;
     @Column(length = 20)
     private ContaEnum tipo;
 
     public ContaModel() {
     }
 
-    public ContaModel(Integer codigo, UsuarioModel usuario, String nconta, String agencia, Integer qtdSaques, double saldo, int dverif, ContaEnum tipo) {
+    public ContaModel(Integer codigo, UsuarioModel usuario, String nconta, String agencia, Integer qtdSaques, double saldo, Integer dverif, ContaEnum tipo) {
         this.codigo = codigo;
         this.usuario = usuario;
         this.nconta = nconta;
@@ -95,11 +98,11 @@ public class ContaModel {
         this.agencia = agencia;
     }
 
-    public int getDverif() {
+    public Integer getDverif() {
         return dverif;
     }
 
-    public void setDverif(int dverif) {
+    public void setDverif(Integer dverif) {
         this.dverif = dverif;
     }
 
