@@ -34,8 +34,8 @@ public class OperacoesController extends TaxaImpl {
     @Autowired
     private OperacoesRepository operacoesRepository;
 
-    @GetMapping("/extrato/{nconta}")
-    public List<OperacoesModel> ConsultaExtrato(@PathVariable("nconta") String nconta) {
+    @GetMapping("/extrato/")
+    public List<OperacoesModel> ConsultaExtrato(@RequestParam String nconta) {
         return repository.findAllByNumeroConta(nconta);
     }
 

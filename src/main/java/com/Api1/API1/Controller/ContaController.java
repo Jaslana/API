@@ -21,19 +21,6 @@ public class ContaController {
     @Autowired
     private ContaRepository repository;
 
-
-    @GetMapping(path = "/api/contas/")
-    public ResponseEntity<?> consutar(@RequestParam String nconta) {
-        Optional<ContaModel> conta = repository.findBynconta(nconta);
-        if (conta.isPresent()) {
-            return ResponseEntity.ok().body(conta);
-        } else {
-            String erro = "Deu ruim, essa conta :" + nconta + "Não existe!";
-            return ResponseEntity.status(200).body(erro);
-
-        }
-    }
-
     @PostMapping(path = "/api/contas/salvar")
     public ResponseEntity<?> salvar(@RequestBody @Valid ContaModel contaModel,
                                     UriComponentsBuilder uriBuilder) {
@@ -48,6 +35,37 @@ public class ContaController {
         return ResponseEntity.created(uri).body(repository.save(contaModel));
     }
 
+    @GetMapping(path = "/api/contas/")
+    public ResponseEntity<?> consutarNConta(@RequestParam String nconta) {
+        Optional<ContaModel> conta = repository.findBynconta(nconta);
+        if (conta.isPresent()) {
+            return ResponseEntity.ok().body(conta);
+        } else {
+            String erro = "Deu ruim, essa conta :" + nconta + " Não existe!";
+            return ResponseEntity.status(200).body(erro);
+
+        }
+    }
+
+    @PostMapping(path = "api/contas/consulta")
+    public List<ContaModel> consultarTodos() {
+        return repository.findAll();
+    }
+
+    @PutMapping("/api/contas/alterar/")
+    @Transactional
+    public ResponseEntity<ContaModelDto> atualizar(@RequestParam String nConta, @RequestBody
+    @Valid ContaModelDto conta, UriComponentsBuilder uriBuilder) {
+        Optional<ContaModel> busca = repository.findBynconta(nConta);
+        if (busca.isPresent()) {
+            ContaModel contaModel = conta.atualizar(nConta, repository);
+            URI uri = uriBuilder.path("/conta").buildAndExpand(contaModel.getCodigo()).toUri();
+            return ResponseEntity.created(uri).body(new ContaModelDto(contaModel));
+        }
+        return ResponseEntity.badRequest().build();
+
+    }
+
     @DeleteMapping(value = "api/contas/delete/")
     public ResponseEntity<?> deletarConta(@RequestParam String nconta) {
         Optional<ContaModel> conta = repository.findBynconta(nconta);
@@ -59,25 +77,6 @@ public class ContaController {
             String json = "Conta não encontrada.";
             return ResponseEntity.badRequest().body(json);
         }
-
-    }
-
-    @PostMapping(path = "api/contas/consulta")
-    public List<ContaModel> consultarTodos() {
-        return repository.findAll();
-    }
-
-    @PutMapping("/api/contas/alterar/{nConta}")
-    @Transactional
-    public ResponseEntity<ContaModelDto> atualizar(@PathVariable("nConta") String nConta, @RequestBody
-    @Valid ContaModelDto conta, UriComponentsBuilder uriBuilder) {
-        Optional<ContaModel> busca = repository.findBynconta(nConta);
-        if (busca.isPresent()) {
-            ContaModel contaModel = conta.atualizar(nConta, repository);
-            URI uri = uriBuilder.path("/conta").buildAndExpand(contaModel.getCodigo()).toUri();
-            return ResponseEntity.created(uri).body(new ContaModelDto(contaModel));
-        }
-        return ResponseEntity.badRequest().build();
 
     }
 }

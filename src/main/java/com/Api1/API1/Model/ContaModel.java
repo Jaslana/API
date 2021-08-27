@@ -14,6 +14,7 @@ import javax.validation.constraints.Size;
 public class ContaModel {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer codigo;
 
     @ManyToOne
@@ -21,7 +22,6 @@ public class ContaModel {
     private UsuarioModel usuario;
 
     @Column(length = 50)
-    @NotNull
     @NotEmpty
     private String nconta;
     @NotNull
@@ -34,6 +34,7 @@ public class ContaModel {
     @Column
     @Max(value = 99)
     @NotNull
+    @Size(min = 5, max = 35, message = "Esse campo deve conter 2 caracteres")
     private Integer dverif;
     @Column(length = 20)
     private ContaEnum tipo;
