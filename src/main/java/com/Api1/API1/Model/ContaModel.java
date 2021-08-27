@@ -21,9 +21,11 @@ public class ContaModel {
     private UsuarioModel usuario;
 
     @Column(length = 50)
-    @NotNull @NotEmpty
+    @NotNull
+    @NotEmpty
     private String nconta;
-    @NotNull @NotEmpty
+    @NotNull
+    @NotEmpty
     @Column(length = 50)
     private String agencia;
     private Integer qtdSaques;

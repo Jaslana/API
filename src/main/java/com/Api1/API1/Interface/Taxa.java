@@ -11,8 +11,12 @@ import java.util.Optional;
 
 public interface Taxa {
     public Optional<ResponseEntity<ContaModel>> sacarConta(@RequestBody OperacoesModel model);
+
     public String reconhecerTipoConta(String cpf);
+
     public Optional<ResponseEntity<ContaModel>> depositarConta(@RequestBody OperacoesModel model);
+
     public Optional<ResponseEntity<ContaModel>> transferirContas(@RequestBody OperacoesModel model);
+    //public Boolean varificarSaldo ( String numConto, OperacoesModel operacoesModel);
 
 }

@@ -22,6 +22,7 @@ public class KafkaProducerSaque {
             System.out.println("Mensagem Enviada Com sucesso: " + data.topic() + ":::partition: " + data.partition() + "/offset: " + data.offset() + "/timestamp: " + data.timestamp());
         }).get();
     }
+
     private static Properties properties() {
         var properties = new Properties();
         properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092");

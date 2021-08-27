@@ -33,21 +33,31 @@ public class TaxaImpl implements Taxa {
     @Override
     public Optional<ResponseEntity<ContaModel>> sacarConta(@RequestBody OperacoesModel model) {
         reconhecerTipoConta(model.getNumeroConta());
-        Optional<ContaModel> conta = repository.findByUsuarioCpf(model.getNumeroConta());
-        return conta.map(record -> {
-            if (record.getQtdSaques() > getQtdsaques()) {
-                record.setSaldo(record.getSaldo() - model.getValor() - getTaxa());
-                ContaModel updated = repository.save(record);
-                operacoesRepository.save(model);
-                return ResponseEntity.ok().body(updated);
-            } else {
-                record.setSaldo(record.getSaldo() - model.getValor());
-                ContaModel updated = repository.save(record);
-                operacoesRepository.save(model);
-                return ResponseEntity.ok().body(updated);
-            }
-        });
-    }
+        Optional<ContaModel> conta = repository.findBynconta(model.getNumeroConta());
+        //if (varificarSaldo(conta.get().getNconta(), model).equals(Boolean.TRUE)) {
+            return conta.map(record -> {
+                if (record.getQtdSaques() > getQtdsaques()) {
+                    record.setSaldo(record.getSaldo() - model.getValor() - getTaxa());
+                    ContaModel updated = repository.save(record);
+                    operacoesRepository.save(model);
+                    return ResponseEntity.ok().body(updated);
+                } else {
+                    record.setSaldo(record.getSaldo() - model.getValor());
+                    ContaModel updated = repository.save(record);
+                    operacoesRepository.save(model);
+                    return ResponseEntity.ok().body(updated);
+                }
+            });
+        }
+//        return conta.map(record -> {
+//                    //ContaModel updated = repository.save(record);
+//                    ContaModel ud = repository.getById(record.getCodigo());
+//                    return ResponseEntity.ok().body(ud);
+//                });
+//        Optional<ResponseEntity<ContaModel>> tetes = conta;
+//
+//        return tetes;
+
     @Override
     public Optional<ResponseEntity<ContaModel>> depositarConta(@RequestBody OperacoesModel model) {
         Optional<ContaModel> conta = repository.findBynconta(model.getNumeroConta());
@@ -58,6 +68,7 @@ public class TaxaImpl implements Taxa {
         });
         return null;
     }
+
     @Override
     public Optional<ResponseEntity<ContaModel>> transferirContas(@RequestBody OperacoesModel operacoesModel) {
         Optional<ContaModel> contaEntrada = repository.findBynconta(operacoesModel.getNumeroConta());
@@ -68,6 +79,7 @@ public class TaxaImpl implements Taxa {
         });
         return null;
     }
+
     public Optional<ResponseEntity<ContaModel>> transferirContasSaida(@RequestBody OperacoesModel mode) {
         Optional<ContaModel> contaSaida = repository.findBynconta(mode.getNumeroConta());
         contaSaida.map(record -> {
@@ -78,6 +90,14 @@ public class TaxaImpl implements Taxa {
         return null;
     }
 
+//    @Override
+//    public Boolean varificarSaldo ( String numConto, OperacoesModel operacoesModel){
+//        Optional<ContaModel> saldo = repository.findBynconta(numConto);
+//        if (saldo.get().getSaldo() >= operacoesModel.getValor()){
+//            return Boolean.TRUE;
+//        }
+//        return Boolean.FALSE;
+//    }
     @Override
     public String reconhecerTipoConta(String nConta) {
         Optional<ContaModel> conta = repository.findBynconta(nConta);

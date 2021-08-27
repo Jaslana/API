@@ -28,9 +28,9 @@ public class UsuarioController {
     @GetMapping(path = "/api/usuarios/")
     public ResponseEntity consutar(@RequestParam String cpf) {
         Optional<UsuarioModel> usuario = repository.findByCpf(cpf);
-        if(usuario.isPresent()){
+        if (usuario.isPresent()) {
             return ResponseEntity.ok().body(usuario);
-        }else {
+        } else {
             String erro = "Deu ruim, esse cpf :" + cpf + "Não existe!";
             return ResponseEntity.status(200).body(erro);
         }
@@ -54,7 +54,7 @@ public class UsuarioController {
         if (cliente.isPresent()) {
             repository.delete(cliente.get());
             String json = "Cliente com id " + cliente + " deletado com sucesso.";
-            return ResponseEntity.accepted().body(new String[]{json, "CPF -> " + cliente.get().getCpf() + "." });
+            return ResponseEntity.accepted().body(new String[]{json, "CPF -> " + cliente.get().getCpf() + "."});
         } else {
             String json = "Cliente não encontrado.";
             return ResponseEntity.badRequest().body(json);

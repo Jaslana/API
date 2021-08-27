@@ -22,10 +22,11 @@ import java.util.concurrent.ExecutionException;
 
 
 @RestController
-@RequestMapping (path = "/api/contas")
+@RequestMapping(path = "/api/contas")
 public class OperacoesController extends TaxaImpl {
-@Autowired
-OperacoesRepository repository;
+
+    @Autowired
+    OperacoesRepository repository;
 
     @Autowired
     ContaRepository Crepository;
@@ -38,23 +39,9 @@ OperacoesRepository repository;
         return repository.findAllByNumeroConta(nconta);
     }
 
-    @PostMapping("/saque")
-    public ResponseEntity<OperacoesModel> salvarTransacaoSaque( @RequestBody @Valid OperacoesModel model, UriComponentsBuilder uriBuilder) throws ExecutionException, InterruptedException, ExecutionException {
-        if(model.getTipoOperacao().equals(TipoOperacaoEnum.Saque)) {
-            sacarConta(model);
-            URI uri = uriBuilder.path("/contas/{id}").buildAndExpand(model.getId()).toUri();
-            //publicar saque no topico
-            //metodo para registrar que o cliente efetuou o saque
-            KafkaProducerSaque ks = new KafkaProducerSaque();
-            ks.EnviarDadosClienteSaque(model.getNumeroConta());
-            return ResponseEntity.created(uri).body(model);
-        }
-        return ResponseEntity.badRequest().body(model);
-    }
-
     @PostMapping("/deposito")
-    public ResponseEntity<OperacoesModel> salvarTransacaoDeposito( @RequestBody @Valid OperacoesModel model, UriComponentsBuilder uriBuilder) {
-        if(model.getTipoOperacao().equals(TipoOperacaoEnum.Deposito)) {
+    public ResponseEntity<OperacoesModel> salvarTransacaoDeposito(@RequestBody @Valid OperacoesModel model, UriComponentsBuilder uriBuilder) {
+        if (model.getTipoOperacao().equals(TipoOperacaoEnum.Deposito)) {
             repository.save(model);
             depositarConta(model);
             URI uri = uriBuilder.path("/contas/{id}").buildAndExpand(model.getId()).toUri();
@@ -62,10 +49,11 @@ OperacoesRepository repository;
         }
         return ResponseEntity.badRequest().body(model);
     }
+
     @PutMapping("/operacoes/transferir")
-    public ResponseEntity<OperacoesModel> transferencias(@RequestBody @Valid OperacoesDto model, UriComponentsBuilder uriBuilder){
+    public ResponseEntity<OperacoesModel> transferencias(@RequestBody @Valid OperacoesDto model, UriComponentsBuilder uriBuilder) {
         OperacoesModel transacaoEntrada = new OperacoesModel(model.getId(), model.getNumeroContaEntrada(), model.getValor(), TipoOperacaoEnum.TransferenciaEntrada, LocalDateTime.now());
-        OperacoesModel transacaoSaida = new OperacoesModel(model.getId(),model.getNumeroContaSaida(), model.getValor(),TipoOperacaoEnum.TransferenciaSaida,LocalDateTime.now());
+        OperacoesModel transacaoSaida = new OperacoesModel(model.getId(), model.getNumeroContaSaida(), model.getValor(), TipoOperacaoEnum.TransferenciaSaida, LocalDateTime.now());
         transferirContas(transacaoEntrada);
         transferirContasSaida(transacaoSaida);
         repository.save(transacaoEntrada);
@@ -73,6 +61,15 @@ OperacoesRepository repository;
         URI uri = uriBuilder.path("/contas/{id}").buildAndExpand(transacaoSaida.getId()).toUri();
         return ResponseEntity.created(uri).body(transacaoSaida);
     }
+
+    @PostMapping("/saque")
+    public ResponseEntity<OperacoesModel> salvarTransacaoSaque(@RequestBody @Valid OperacoesModel model, UriComponentsBuilder uriBuilder) throws ExecutionException, InterruptedException, ExecutionException {
+        if (model.getTipoOperacao().equals(TipoOperacaoEnum.Saque)) {
+            return validacaodesaque(model, uriBuilder);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
     public ResponseEntity<OperacoesModel> validacaodesaque(@RequestBody @Valid OperacoesModel model, UriComponentsBuilder uriBuilder) throws ExecutionException, InterruptedException {
         Optional<ContaModel> busca = Crepository.findBynconta(model.getNumeroConta());
         if (busca.get().getSaldo() <= model.getValor()) {

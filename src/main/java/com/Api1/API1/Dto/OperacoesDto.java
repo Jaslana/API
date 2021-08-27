@@ -11,10 +11,10 @@ import org.hibernate.validator.constraints.br.CPF;
 public class OperacoesDto {
 
     public Integer Id;
-
+    @NotNull
     public String NumeroContaEntrada;
+    @NotNull
     public String NumeroContaSaida;
-
     @NotNull
     public double valor;
 

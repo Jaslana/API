@@ -16,30 +16,34 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 public class ContaModelDto {
-        private String nconta;
-        private String agencia;
-        private int dverif;
-        public ContaModelDto(ContaModel contaModel){
-            this.nconta = contaModel.getNconta();
-            this.agencia = contaModel.getAgencia();
-            this.dverif = contaModel.getDverif();
-        }
-        public ContaModelDto() {
-        }
-        public static List<ContaModelDto> converter(List<ContaModel> clienteModel){
-            return clienteModel.stream().map(ContaModelDto::new).collect(Collectors.toList());
-        }
-        public ContaModel atualizar(String nconta, ContaRepository contaRepository) {
-            Optional<ContaModel> contaModel = contaRepository.findBynconta(nconta);
-            contaModel.map(alter -> {
-                alter.setAgencia(this.getAgencia());
-                alter.setNconta(this.getNconta());
-                alter.setDverif(this.getDverif());
-                ContaModel updated = contaRepository.save(alter);
-                return ResponseEntity.ok().body(updated);
-            });
-            return contaModel.get();
-        }
+    private String nconta;
+    private String agencia;
+    private int dverif;
 
+    public ContaModelDto(ContaModel contaModel) {
+        this.nconta = contaModel.getNconta();
+        this.agencia = contaModel.getAgencia();
+        this.dverif = contaModel.getDverif();
     }
+
+    public ContaModelDto() {
+    }
+
+    public static List<ContaModelDto> converter(List<ContaModel> clienteModel) {
+        return clienteModel.stream().map(ContaModelDto::new).collect(Collectors.toList());
+    }
+
+    public ContaModel atualizar(String nconta, ContaRepository contaRepository) {
+        Optional<ContaModel> contaModel = contaRepository.findBynconta(nconta);
+        contaModel.map(alter -> {
+            alter.setAgencia(this.getAgencia());
+            alter.setNconta(this.getNconta());
+            alter.setDverif(this.getDverif());
+            ContaModel updated = contaRepository.save(alter);
+            return ResponseEntity.ok().body(updated);
+        });
+        return contaModel.get();
+    }
+
+}
 

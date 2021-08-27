@@ -2,9 +2,9 @@ package com.Api1.API1.Model;
 
 
 public enum ContaEnum {
-    FISICA(10, 5, "FISICA" ),
+    FISICA(10, 5, "FISICA"),
     JURIDICA(10, 50, "JURIDICA"),
-    GOVERNAMENTAL(20, 250,"GOVERNAMENTAL");
+    GOVERNAMENTAL(20, 250, "GOVERNAMENTAL");
 
 
     private double taxa;
