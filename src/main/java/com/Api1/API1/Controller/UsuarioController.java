@@ -2,7 +2,6 @@ package com.Api1.API1.Controller;
 
 
 import com.Api1.API1.Dto.UsuarioModelDto;
-import com.Api1.API1.Model.ContaModel;
 import com.Api1.API1.Model.UsuarioModel;
 import com.Api1.API1.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,17 +24,6 @@ public class UsuarioController {
     public UsuarioController(UsuarioRepository repository) {
     }
 
-    @GetMapping(path = "/api/usuarios/")
-    public ResponseEntity consutar(@RequestParam String cpf) {
-        Optional<UsuarioModel> usuario = repository.findByCpf(cpf);
-        if (usuario.isPresent()) {
-            return ResponseEntity.ok().body(usuario);
-        } else {
-            String erro = "Deu ruim, esse cpf :" + cpf + "Não existe!";
-            return ResponseEntity.status(200).body(erro);
-        }
-    }
-
     @PostMapping(path = "/api/usuarios/salvar")
     @Transactional
     public ResponseEntity<?> salvar(@RequestBody @Valid UsuarioModel clienteModel, UriComponentsBuilder uriBuilder) {
@@ -48,27 +36,14 @@ public class UsuarioController {
         return ResponseEntity.created(uri).body(repository.save(clienteModel));
     }
 
-    @DeleteMapping(value = "api/usuarios/delete/")
-    public ResponseEntity<?> delete(@RequestParam Integer id) {
-        Optional<UsuarioModel> cliente = repository.findById(id);
-        if (cliente.isPresent()) {
-            repository.delete(cliente.get());
-            String json = "Cliente com id " + cliente + " deletado com sucesso.";
-            return ResponseEntity.accepted().body(new String[]{json, "CPF -> " + cliente.get().getCpf() + "."});
-        } else {
-            String json = "Cliente não encontrado.";
-            return ResponseEntity.badRequest().body(json);
-        }
-    }
-
-    @DeleteMapping(value = "/api/usuarios/buscar/{idUsuario}")
-    public ResponseEntity<?> buscarContaPorId(Integer idUsuario) {
-        Optional<UsuarioModel> usuario = repository.findById((idUsuario));
+    @GetMapping(path = "/api/usuarios/")
+    public ResponseEntity consutarCpf(@RequestParam String cpf) {
+        Optional<UsuarioModel> usuario = repository.findByCpf(cpf);
         if (usuario.isPresent()) {
-            return ResponseEntity.ok().body(repository.findById(idUsuario));
+            return ResponseEntity.ok().body(usuario);
         } else {
-            System.out.println("ID não foi localizado no sistema.");
-            return ResponseEntity.status(403).body(usuario);
+            String erro = "Deu ruim, esse cpf :" + cpf + " Não existe!";
+            return ResponseEntity.status(200).body(erro);
         }
     }
 
@@ -78,18 +53,32 @@ public class UsuarioController {
     }
 
 
-    @PutMapping("/api/usuarios/alterar/{cpf}")
+    @PutMapping("/api/usuarios/alterar/")
     @Transactional
-    public ResponseEntity<UsuarioModelDto> atualizar(@PathVariable("cpf") String cpf, @RequestBody @Valid UsuarioModelDto cliente, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<UsuarioModelDto> atualizar(@RequestParam String cpf, @RequestBody
+    @Valid UsuarioModelDto cliente, UriComponentsBuilder uriBuilder) {
         Optional<UsuarioModel> busca = repository.findByCpf(cpf);
         if (busca.isPresent()) {
-            ResponseEntity<UsuarioModel> clienteModel = cliente.atualizar(cpf, repository);
-            URI uri = uriBuilder.path("/clientes").buildAndExpand(clienteModel.getBody().getId()).toUri();
-            return ResponseEntity.created(uri).body(new UsuarioModelDto(clienteModel.getBody()));
+            UsuarioModel clienteModel = cliente.atualizar(cpf, repository);
+            URI uri = uriBuilder.path("/clientes").buildAndExpand(clienteModel.getId()).toUri();
+            return ResponseEntity.created(uri).body(new UsuarioModelDto(clienteModel));
         } else {
             return ResponseEntity.notFound().build();
         }
 
+    }
+
+    @DeleteMapping(value = "api/usuarios/delete/")
+    public ResponseEntity<?> delete(@RequestParam Integer id) {
+        Optional<UsuarioModel> cliente = repository.findById(id);
+        if (cliente.isPresent()) {
+            repository.delete(cliente.get());
+            String json = "Cliente com id " + id + " deletado com sucesso.";
+            return ResponseEntity.accepted().body(new String[]{json, "CPF -> " + cliente.get().getCpf() + "."});
+        } else {
+            String json = "Cliente não encontrado.";
+            return ResponseEntity.badRequest().body(json);
+        }
     }
 
 }

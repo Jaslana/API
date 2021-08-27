@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.ResponseEntity;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -34,7 +33,7 @@ public class UsuarioModelDto {
         return clienteModel.stream().map(UsuarioModelDto::new).collect(Collectors.toList());
     }
 
-    public ResponseEntity<UsuarioModel> atualizar(String cpf, UsuarioRepository clienteRepository) {
+    public UsuarioModel atualizar(String cpf, UsuarioRepository clienteRepository) {
         Optional<UsuarioModel> clienteModel = clienteRepository.findByCpf(cpf);
         clienteModel.map(alter -> {
             alter.setNome(this.getNome());
@@ -44,7 +43,7 @@ public class UsuarioModelDto {
             UsuarioModel updated = clienteRepository.save(alter);
             return ResponseEntity.ok().body(updated);
         });
-        return ResponseEntity.ok(clienteModel.get());
+        return clienteModel.get();
     }
 }
 
