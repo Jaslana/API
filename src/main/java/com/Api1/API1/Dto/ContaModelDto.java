@@ -4,10 +4,13 @@ import com.Api1.API1.Model.ContaModel;
 import com.Api1.API1.Model.UsuarioModel;
 import com.Api1.API1.Repository.ContaRepository;
 import com.Api1.API1.Repository.UsuarioRepository;
+import com.sun.istack.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.ResponseEntity;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.NotEmpty;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -16,8 +19,16 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 public class ContaModelDto {
+
+    @NotNull
+    @NotEmpty
     private String nconta;
+    @NotNull
+    @NotEmpty
     private String agencia;
+    @NotNull
+    @NotEmpty
+    @Max(value = 99)
     private int dverif;
 
     public ContaModelDto(ContaModel contaModel) {

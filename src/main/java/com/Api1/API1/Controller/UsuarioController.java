@@ -19,26 +19,26 @@ import java.util.Optional;
 public class UsuarioController {
 
     @Autowired
-    private UsuarioRepository repository;
+    private UsuarioRepository usuarioRepository;
 
-    public UsuarioController(UsuarioRepository repository) {
+    public UsuarioController(UsuarioRepository usuarioRepository) {
     }
 
     @PostMapping(path = "/api/usuarios/salvar")
     @Transactional
     public ResponseEntity<?> salvar(@RequestBody @Valid UsuarioModel clienteModel, UriComponentsBuilder uriBuilder) {
-        Optional<UsuarioModel> usuario = repository.findByCpf(clienteModel.getCpf());
+        Optional<UsuarioModel> usuario = usuarioRepository.findByCpf(clienteModel.getCpf());
         if (usuario.isPresent()) {
             String json = "Deu ruim , esse CPF ja existe :( " + clienteModel.getCpf();
             return ResponseEntity.badRequest().body(json);
         }
         URI uri = uriBuilder.path("/clientes").buildAndExpand(clienteModel.getId()).toUri();
-        return ResponseEntity.created(uri).body(repository.save(clienteModel));
+        return ResponseEntity.created(uri).body(usuarioRepository.save(clienteModel));
     }
 
     @GetMapping(path = "/api/usuarios/")
     public ResponseEntity consutarCpf(@RequestParam String cpf) {
-        Optional<UsuarioModel> usuario = repository.findByCpf(cpf);
+        Optional<UsuarioModel> usuario = usuarioRepository.findByCpf(cpf);
         if (usuario.isPresent()) {
             return ResponseEntity.ok().body(usuario);
         } else {
@@ -49,7 +49,7 @@ public class UsuarioController {
 
     @PostMapping(path = "/api/usuarios/consultar")
     public List<UsuarioModel> consultarTodos() {
-        return repository.findAll();
+        return usuarioRepository.findAll();
     }
 
 
@@ -57,9 +57,9 @@ public class UsuarioController {
     @Transactional
     public ResponseEntity<UsuarioModelDto> atualizar(@RequestParam String cpf, @RequestBody
     @Valid UsuarioModelDto cliente, UriComponentsBuilder uriBuilder) {
-        Optional<UsuarioModel> busca = repository.findByCpf(cpf);
+        Optional<UsuarioModel> busca = usuarioRepository.findByCpf(cpf);
         if (busca.isPresent()) {
-            UsuarioModel clienteModel = cliente.atualizar(cpf, repository);
+            UsuarioModel clienteModel = cliente.atualizar(cpf, usuarioRepository);
             URI uri = uriBuilder.path("/clientes").buildAndExpand(clienteModel.getId()).toUri();
             return ResponseEntity.created(uri).body(new UsuarioModelDto(clienteModel));
         } else {
@@ -70,9 +70,9 @@ public class UsuarioController {
 
     @DeleteMapping(value = "api/usuarios/delete/")
     public ResponseEntity<?> delete(@RequestParam Integer id) {
-        Optional<UsuarioModel> cliente = repository.findById(id);
+        Optional<UsuarioModel> cliente = usuarioRepository.findById(id);
         if (cliente.isPresent()) {
-            repository.delete(cliente.get());
+            usuarioRepository.delete(cliente.get());
             String json = "Cliente com id " + id + " deletado com sucesso.";
             return ResponseEntity.accepted().body(new String[]{json, "CPF -> " + cliente.get().getCpf() + "."});
         } else {

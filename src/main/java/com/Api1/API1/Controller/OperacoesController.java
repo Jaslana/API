@@ -26,23 +26,21 @@ import java.util.concurrent.ExecutionException;
 public class OperacoesController extends TaxaImpl {
 
     @Autowired
-    OperacoesRepository repository;
-
-    @Autowired
-    ContaRepository Crepository;
+    private ContaRepository contaRepository;
 
     @Autowired
     private OperacoesRepository operacoesRepository;
 
     @GetMapping("/extrato/")
     public List<OperacoesModel> ConsultaExtrato(@RequestParam String nconta) {
-        return repository.findAllByNumeroConta(nconta);
+        return operacoesRepository.findAllByNumeroConta(nconta);
     }
 
     @PostMapping("/deposito")
-    public ResponseEntity<OperacoesModel> salvarTransacaoDeposito(@RequestBody @Valid OperacoesModel model, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<OperacoesModel> salvarTransacaoDeposito(@RequestBody @Valid OperacoesModel model,
+                                                                  UriComponentsBuilder uriBuilder) {
         if (model.getTipoOperacao().equals(TipoOperacaoEnum.Deposito)) {
-            repository.save(model);
+            operacoesRepository.save(model);
             depositarConta(model);
             URI uri = uriBuilder.path("/contas/{id}").buildAndExpand(model.getId()).toUri();
             return ResponseEntity.created(uri).body(model);
@@ -51,27 +49,34 @@ public class OperacoesController extends TaxaImpl {
     }
 
     @PutMapping("/operacoes/transferir")
-    public ResponseEntity<OperacoesModel> transferencias(@RequestBody @Valid OperacoesDto model, UriComponentsBuilder uriBuilder) {
-        OperacoesModel transacaoEntrada = new OperacoesModel(model.getId(), model.getNumeroContaEntrada(), model.getValor(), TipoOperacaoEnum.TransferenciaEntrada, LocalDateTime.now());
-        OperacoesModel transacaoSaida = new OperacoesModel(model.getId(), model.getNumeroContaSaida(), model.getValor(), TipoOperacaoEnum.TransferenciaSaida, LocalDateTime.now());
+    public ResponseEntity<OperacoesModel> transferencias(@RequestBody @Valid OperacoesDto model,
+                                                         UriComponentsBuilder uriBuilder) {
+        OperacoesModel transacaoEntrada = new OperacoesModel(model.getId(), model.getNumeroContaEntrada(),
+                model.getValor(), TipoOperacaoEnum.TransferenciaEntrada, LocalDateTime.now());
+        OperacoesModel transacaoSaida = new OperacoesModel(model.getId(), model.getNumeroContaSaida(),
+                model.getValor(), TipoOperacaoEnum.TransferenciaSaida, LocalDateTime.now());
         transferirContas(transacaoEntrada);
         transferirContasSaida(transacaoSaida);
-        repository.save(transacaoEntrada);
-        repository.save(transacaoSaida);
+        operacoesRepository.save(transacaoEntrada);
+        operacoesRepository.save(transacaoSaida);
         URI uri = uriBuilder.path("/contas/{id}").buildAndExpand(transacaoSaida.getId()).toUri();
         return ResponseEntity.created(uri).body(transacaoSaida);
     }
 
     @PostMapping("/saque")
-    public ResponseEntity<OperacoesModel> salvarTransacaoSaque(@RequestBody @Valid OperacoesModel model, UriComponentsBuilder uriBuilder) throws ExecutionException, InterruptedException, ExecutionException {
+    public ResponseEntity<OperacoesModel> salvarTransacaoSaque(@RequestBody @Valid OperacoesModel model,
+                                                               UriComponentsBuilder uriBuilder)
+            throws ExecutionException, InterruptedException, ExecutionException {
         if (model.getTipoOperacao().equals(TipoOperacaoEnum.Saque)) {
             return validacaodesaque(model, uriBuilder);
         }
         return ResponseEntity.notFound().build();
     }
 
-    public ResponseEntity<OperacoesModel> validacaodesaque(@RequestBody @Valid OperacoesModel model, UriComponentsBuilder uriBuilder) throws ExecutionException, InterruptedException {
-        Optional<ContaModel> busca = Crepository.findBynconta(model.getNumeroConta());
+    public ResponseEntity<OperacoesModel> validacaodesaque(@RequestBody @Valid OperacoesModel model,
+                                                           UriComponentsBuilder uriBuilder)
+            throws ExecutionException, InterruptedException {
+        Optional<ContaModel> busca = contaRepository.findBynconta(model.getNumeroConta());
         if (busca.get().getSaldo() <= model.getValor()) {
             return ResponseEntity.badRequest().build();
         }

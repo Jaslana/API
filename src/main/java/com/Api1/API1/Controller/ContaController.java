@@ -3,7 +3,9 @@ package com.Api1.API1.Controller;
 
 import com.Api1.API1.Dto.ContaModelDto;
 import com.Api1.API1.Model.ContaModel;
+import com.Api1.API1.Model.UsuarioModel;
 import com.Api1.API1.Repository.ContaRepository;
+import com.Api1.API1.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,12 +21,15 @@ import java.util.Optional;
 public class ContaController {
 
     @Autowired
-    private ContaRepository repository;
+    private ContaRepository contaRepository;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @PostMapping(path = "/api/contas/salvar")
     public ResponseEntity<?> salvar(@RequestBody @Valid ContaModel contaModel,
                                     UriComponentsBuilder uriBuilder) {
-        Optional<ContaModel> conta = repository.findBynconta(contaModel.getNconta());
+        Optional<ContaModel> conta = contaRepository.findBynconta(contaModel.getNconta());
         if (conta.isPresent()) {
             String json = "Deu ruim , essa conta ja existe :( " + contaModel.getNconta();
             return ResponseEntity.badRequest().body(json);
@@ -32,12 +37,14 @@ public class ContaController {
         URI uri = uriBuilder.path("/conta").buildAndExpand(contaModel.getCodigo()).toUri();
         Integer inicio = 0;
         contaModel.setQtdSaques(inicio);
-        return ResponseEntity.created(uri).body(repository.save(contaModel));
+        Optional<UsuarioModel> usuarioModel = usuarioRepository.findById(contaModel.getUsuario().getId());
+        contaModel.setUsuario(usuarioModel.get());
+        return ResponseEntity.created(uri).body(contaRepository.save(contaModel));
     }
 
     @GetMapping(path = "/api/contas/")
     public ResponseEntity<?> consutarNConta(@RequestParam String nconta) {
-        Optional<ContaModel> conta = repository.findBynconta(nconta);
+        Optional<ContaModel> conta = contaRepository.findBynconta(nconta);
         if (conta.isPresent()) {
             return ResponseEntity.ok().body(conta);
         } else {
@@ -49,16 +56,16 @@ public class ContaController {
 
     @PostMapping(path = "api/contas/consulta")
     public List<ContaModel> consultarTodos() {
-        return repository.findAll();
+        return contaRepository.findAll();
     }
 
     @PutMapping("/api/contas/alterar/")
     @Transactional
     public ResponseEntity<ContaModelDto> atualizar(@RequestParam String nConta, @RequestBody
     @Valid ContaModelDto conta, UriComponentsBuilder uriBuilder) {
-        Optional<ContaModel> busca = repository.findBynconta(nConta);
+        Optional<ContaModel> busca = contaRepository.findBynconta(nConta);
         if (busca.isPresent()) {
-            ContaModel contaModel = conta.atualizar(nConta, repository);
+            ContaModel contaModel = conta.atualizar(nConta, contaRepository);
             URI uri = uriBuilder.path("/conta").buildAndExpand(contaModel.getCodigo()).toUri();
             return ResponseEntity.created(uri).body(new ContaModelDto(contaModel));
         }
@@ -68,9 +75,9 @@ public class ContaController {
 
     @DeleteMapping(value = "api/contas/delete/")
     public ResponseEntity<?> deletarConta(@RequestParam String nconta) {
-        Optional<ContaModel> conta = repository.findBynconta(nconta);
+        Optional<ContaModel> conta = contaRepository.findBynconta(nconta);
         if (conta.isPresent()) {
-            repository.delete(conta.get());
+            contaRepository.delete(conta.get());
             String json = "Conta " + nconta + " deletada com sucesso.";
             return ResponseEntity.accepted().body(new String[]{json, "NUMERO DA CONTA: " + conta.get().getNconta() + "."});
         } else {
