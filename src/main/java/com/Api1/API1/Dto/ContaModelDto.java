@@ -27,7 +27,6 @@ public class ContaModelDto {
     @NotEmpty
     private String agencia;
     @NotNull
-    @NotEmpty
     @Max(value = 99)
     private int dverif;
 

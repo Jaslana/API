@@ -34,9 +34,9 @@ public class ContaModel {
     @Column
     @Max(value = 99)
     @NotNull
-    @Size(min = 5, max = 35, message = "Esse campo deve conter 2 caracteres")
     private Integer dverif;
-    @Column(length = 20)
+    @Column
+    @Enumerated(EnumType.ORDINAL)
     private ContaEnum tipo;
 
     public ContaModel() {
