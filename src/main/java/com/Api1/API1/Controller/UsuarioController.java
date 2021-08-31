@@ -2,8 +2,12 @@ package com.Api1.API1.Controller;
 
 
 import com.Api1.API1.Dto.UsuarioModelDto;
+import com.Api1.API1.Model.ContaModel;
+import com.Api1.API1.Model.OperacoesModel;
 import com.Api1.API1.Model.UsuarioModel;
+import com.Api1.API1.Repository.ContaRepository;
 import com.Api1.API1.Repository.UsuarioRepository;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,29 +25,43 @@ public class UsuarioController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private ContaRepository contaRepository;
+
     public UsuarioController(UsuarioRepository usuarioRepository) {
     }
 
     @PostMapping(path = "/api/usuarios/salvar")
     @Transactional
-    public ResponseEntity<?> salvar(@RequestBody @Valid UsuarioModel clienteModel, UriComponentsBuilder uriBuilder) {
-        Optional<UsuarioModel> usuario = usuarioRepository.findByCpf(clienteModel.getCpf());
+    public ResponseEntity<?> salvar(@RequestBody @Valid UsuarioModel usuarioModel, UriComponentsBuilder uriBuilder) {
+        Optional<UsuarioModel> usuario = usuarioRepository.findByCpf(usuarioModel.getCpf());
         if (usuario.isPresent()) {
-            String json = "Deu ruim , esse CPF ja existe :( " + clienteModel.getCpf();
+            JSONObject json = new JSONObject();
+            json.put("Campo", usuario);
+            json.put("Mensagem:", "Esse usuario ja existe");
             return ResponseEntity.badRequest().body(json);
         }
-        URI uri = uriBuilder.path("/clientes").buildAndExpand(clienteModel.getId()).toUri();
-        return ResponseEntity.created(uri).body(usuarioRepository.save(clienteModel));
+        JSONObject json = new JSONObject();
+        json.put("Campo", usuario);
+        json.put("Menssagem", "Usuario cadastrado com sucesso!");
+        URI uri = uriBuilder.path("/usuarios").buildAndExpand(usuarioModel.getId()).toUri();
+        return ResponseEntity.created(uri).body(usuarioRepository.save(usuarioModel));
     }
 
     @GetMapping(path = "/api/usuarios/")
     public ResponseEntity consutarCpf(@RequestParam String cpf) {
         Optional<UsuarioModel> usuario = usuarioRepository.findByCpf(cpf);
         if (usuario.isPresent()) {
-            return ResponseEntity.ok().body(usuario);
+            JSONObject json = new JSONObject();
+            json.put("Campo", usuario);
+            json.put("Menssagem", "Usuario econtrado com sucesso!");
+
+            return ResponseEntity.accepted().body(json);
         } else {
-            String erro = "Deu ruim, esse cpf :" + cpf + " Não existe!";
-            return ResponseEntity.status(200).body(erro);
+            JSONObject json = new JSONObject();
+            json.put("Menssagem", "Essa usuario nao existe!");
+            json.put("Campo:", "CPF: " + cpf);
+            return ResponseEntity.badRequest().body(json);
         }
     }
 
@@ -55,30 +73,46 @@ public class UsuarioController {
 
     @PutMapping("/api/usuarios/alterar/")
     @Transactional
-    public ResponseEntity<UsuarioModelDto> atualizar(@RequestParam String cpf, @RequestBody
-    @Valid UsuarioModelDto cliente, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<?> atualizar(@RequestParam String cpf, @RequestBody
+    @Valid UsuarioModelDto usuario, UriComponentsBuilder uriBuilder) {
         Optional<UsuarioModel> busca = usuarioRepository.findByCpf(cpf);
         if (busca.isPresent()) {
-            UsuarioModel clienteModel = cliente.atualizar(cpf, usuarioRepository);
-            URI uri = uriBuilder.path("/clientes").buildAndExpand(clienteModel.getId()).toUri();
-            return ResponseEntity.created(uri).body(new UsuarioModelDto(clienteModel));
+            UsuarioModel usuarioModel = usuario.atualizar(cpf, usuarioRepository);
+            URI uri = uriBuilder.path("/usuarios").buildAndExpand(usuarioModel.getId()).toUri();
+            JSONObject json = new JSONObject();
+            json.put("Campo", usuario);
+            json.put("Menssagem", "Usuario atualizado com sucesso!");
+            return ResponseEntity.created(uri).body(new UsuarioModelDto(usuarioModel));
         } else {
-            return ResponseEntity.notFound().build();
+            JSONObject json = new JSONObject();
+            json.put("Erro", "Esse usuario nao existe!");
+            json.put("Campo", cpf);
+            return ResponseEntity.badRequest().body(json);
         }
 
     }
 
     @DeleteMapping(value = "api/usuarios/delete/")
-    public ResponseEntity<?> delete(@RequestParam Integer id) {
-        Optional<UsuarioModel> cliente = usuarioRepository.findById(id);
-        if (cliente.isPresent()) {
-            usuarioRepository.delete(cliente.get());
-            String json = "Cliente com id " + id + " deletado com sucesso.";
-            return ResponseEntity.accepted().body(new String[]{json, "CPF -> " + cliente.get().getCpf() + "."});
-        } else {
-            String json = "Cliente não encontrado.";
-            return ResponseEntity.badRequest().body(json);
+    public ResponseEntity<?> delete(@RequestParam String cpf) {
+        Optional<UsuarioModel> usuario = usuarioRepository.findByCpf(cpf);
+        List<ContaModel> contas = contaRepository.findAllByUsuarioCpf(cpf);
+        if (contas.isEmpty()) {
+            if (usuario.isPresent()) {
+                usuarioRepository.delete(usuario.get());
+                JSONObject json = new JSONObject();
+                json.put("Campo", usuario);
+                json.put("Menssagem", "Deletada com sucesso!");
+                return ResponseEntity.accepted().body(json);
+            } else {
+                JSONObject json = new JSONObject();
+                json.put("Erro", "Esse usuario nao existe!");
+                json.put("Campo", cpf);
+                return ResponseEntity.badRequest().body(json);
+            }
         }
+        String json = "Existe " + contas.size() + "conta/s cadastrada nesse cpf ." + contas.get(contas.size());
+        return ResponseEntity.badRequest().body(json);
     }
+
 
 }

@@ -6,13 +6,19 @@ import com.Api1.API1.Model.ContaModel;
 import com.Api1.API1.Model.UsuarioModel;
 import com.Api1.API1.Repository.ContaRepository;
 import com.Api1.API1.Repository.UsuarioRepository;
+import org.hibernate.validator.constraints.br.CPF;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.persistence.Column;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +37,9 @@ public class ContaController {
                                     UriComponentsBuilder uriBuilder) {
         Optional<ContaModel> conta = contaRepository.findBynconta(contaModel.getNconta());
         if (conta.isPresent()) {
-            String json = "Deu ruim , essa conta ja existe :( " + contaModel.getNconta();
+            JSONObject json = new JSONObject();
+            json.put("Erro", "Essa conta ja existe!");
+            json.put("Campo", conta);
             return ResponseEntity.badRequest().body(json);
         }
         URI uri = uriBuilder.path("/conta").buildAndExpand(contaModel.getCodigo()).toUri();
@@ -46,11 +54,15 @@ public class ContaController {
     public ResponseEntity<?> consutarNConta(@RequestParam String nconta) {
         Optional<ContaModel> conta = contaRepository.findBynconta(nconta);
         if (conta.isPresent()) {
-            return ResponseEntity.ok().body(conta);
+            JSONObject json = new JSONObject();
+            json.put("Campo", conta);
+            json.put("Menssagem", "Conta econtrada com sucesso!" );
+            return ResponseEntity.accepted().body(json);
         } else {
-            String erro = "Deu ruim, essa conta :" + nconta + " Não existe!";
-            return ResponseEntity.status(200).body(erro);
-
+            JSONObject json = new JSONObject();
+            json.put("Menssagem", "Essa conta nao existe!");
+            json.put("Campo:", "NumeroConta: " + nconta);
+            return ResponseEntity.badRequest().body(json);
         }
     }
 
@@ -61,7 +73,7 @@ public class ContaController {
 
     @PutMapping("/api/contas/alterar/")
     @Transactional
-    public ResponseEntity<ContaModelDto> atualizar(@RequestParam String nConta, @RequestBody
+    public ResponseEntity<?> atualizar(@RequestParam String nConta, @RequestBody
     @Valid ContaModelDto conta, UriComponentsBuilder uriBuilder) {
         Optional<ContaModel> busca = contaRepository.findBynconta(nConta);
         if (busca.isPresent()) {
@@ -69,7 +81,10 @@ public class ContaController {
             URI uri = uriBuilder.path("/conta").buildAndExpand(contaModel.getCodigo()).toUri();
             return ResponseEntity.created(uri).body(new ContaModelDto(contaModel));
         }
-        return ResponseEntity.badRequest().build();
+        JSONObject json = new JSONObject();
+        json.put("Erro", "Essa conta nao existe!");
+        json.put("Campo", "NumeroConta: " + nConta);
+        return ResponseEntity.badRequest().body(json);
 
     }
 
@@ -78,12 +93,17 @@ public class ContaController {
         Optional<ContaModel> conta = contaRepository.findBynconta(nconta);
         if (conta.isPresent()) {
             contaRepository.delete(conta.get());
-            String json = "Conta " + nconta + " deletada com sucesso.";
-            return ResponseEntity.accepted().body(new String[]{json, "NUMERO DA CONTA: " + conta.get().getNconta() + "."});
-        } else {
-            String json = "Conta não encontrada.";
+            JSONObject json = new JSONObject();
+            json.put("Campo", conta);
+            json.put("Menssagem", "Conta deletada com sucesso!");
+            return ResponseEntity.accepted().body(json);
+            } else {
+            JSONObject json = new JSONObject();
+            json.put("Erro", "Essa conta nao existe!");
+            json.put("Campo", nconta);
             return ResponseEntity.badRequest().body(json);
         }
+
 
     }
 }
