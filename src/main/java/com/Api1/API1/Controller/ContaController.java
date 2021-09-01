@@ -6,19 +6,14 @@ import com.Api1.API1.Model.ContaModel;
 import com.Api1.API1.Model.UsuarioModel;
 import com.Api1.API1.Repository.ContaRepository;
 import com.Api1.API1.Repository.UsuarioRepository;
-import org.hibernate.validator.constraints.br.CPF;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.persistence.Column;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -36,19 +31,29 @@ public class ContaController {
     public ResponseEntity<?> salvar(@RequestBody @Valid ContaModel contaModel,
                                     UriComponentsBuilder uriBuilder) {
         Optional<ContaModel> conta = contaRepository.findBynconta(contaModel.getNconta());
-        if (conta.isPresent()) {
-            JSONObject json = new JSONObject();
-            json.put("Erro", "Essa conta ja existe!");
-            json.put("Campo", conta);
-            return ResponseEntity.badRequest().body(json);
+        Optional<UsuarioModel> busca = usuarioRepository.findById(contaModel.getUsuario().getId());
+
+            if (conta.isPresent()) {
+                JSONObject json = new JSONObject();
+                json.put("Erro", "Essa conta ja existe!");
+                json.put("Campo", conta);
+                return ResponseEntity.badRequest().body(json);
+            }else {
+                if (busca.isPresent()) {
+                    URI uri = uriBuilder.path("/conta").buildAndExpand(contaModel.getCodigo()).toUri();
+                    Integer inicio = 0;
+                    contaModel.setQtdSaques(inicio);
+                    Optional<UsuarioModel> usuarioModel = usuarioRepository.findById(contaModel.getUsuario().getId());
+                    contaModel.setUsuario(usuarioModel.get());
+                    return ResponseEntity.created(uri).body(contaRepository.save(contaModel));
+                }
+                    JSONObject json = new JSONObject();
+                    json.put("Menssagem", "Esse usuario nao existe!");
+                    json.put("Campo:", "ID: " + contaModel.getUsuario().getId());
+                    return ResponseEntity.badRequest().body(json);
+            }
         }
-        URI uri = uriBuilder.path("/conta").buildAndExpand(contaModel.getCodigo()).toUri();
-        Integer inicio = 0;
-        contaModel.setQtdSaques(inicio);
-        Optional<UsuarioModel> usuarioModel = usuarioRepository.findById(contaModel.getUsuario().getId());
-        contaModel.setUsuario(usuarioModel.get());
-        return ResponseEntity.created(uri).body(contaRepository.save(contaModel));
-    }
+
 
     @GetMapping(path = "/api/contas/")
     public ResponseEntity<?> consutarNConta(@RequestParam String nconta) {
