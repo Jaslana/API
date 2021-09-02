@@ -1,53 +1,52 @@
 package com.Api1.API1.TestControllers;
 
-import com.Api1.API1.Controller.UsuarioController;
+import com.Api1.API1.Controller.ContaController;
 import com.Api1.API1.Model.ContaEnum;
+import com.Api1.API1.Model.ContaModel;
 import com.Api1.API1.Model.UsuarioModel;
-import com.Api1.API1.Repository.UsuarioRepository;
-import org.junit.Test;
+import com.Api1.API1.Repository.ContaRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
+
 @SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
+
 public class ContaTest {
-    @MockBean
-    UsuarioController usuario;
-    @MockBean
-    UsuarioRepository repository;
 
-    @BeforeEach
-    public void setUp() {
-        this.usuario = new UsuarioController(repository);
-    }
+        @MockBean
+        ContaController contaController;
+        @MockBean
+        ContaRepository contaRepository;
 
-//    @Test
-//    @DisplayName("CREATE")
-//    public void save_SalvarCliente() {
-//        UsuarioModel cliente = clientePadrao();
-//        UsuarioModel clienteMock = clientePadrao();
-//        Mockito.when(repository.save(cliente)).thenReturn(clienteMock);
-//        UriComponentsBuilder uribuilder = null;
-//        URI uri = uribuilder.path("usuario/{id}").buildAndExpand(cliente.getId()).toUri();
-//        ResponseEntity<UsuarioModel> clienteSalvo = usuario.salvar(clienteMock,uribuilder);
-//        Assertions.assertNotNull(clienteSalvo);
-//        Assertions.assertNotNull(clienteSalvo.getBody().getId());
-//        Assertions.assertEquals(cliente.getCpf(), clienteSalvo.getBody().getCpf());
-//    }
-//
-//    public UsuarioModel clientePadrao() {
-//        return new UsuarioModel(1,"Jose Alves Santos", "46860077808", "Rua Niteroi 95, Centro", "(43)98787-0456", ContaEnum.FISICA);
-//
-//    }
+        @BeforeEach
+        public void setUp() {
+            this.contaController = new ContaController(contaRepository);
+        }
+
+
+        @Test
+        void save_SalvarConta() {
+
+            ContaModel contaModel = contaPadrao();
+
+            ContaModel contaMock = contaPadrao();
+            contaMock.setCodigo(1);
+
+            Mockito.when(contaRepository.save(contaModel)).thenReturn(contaMock);
+            Assertions.assertNotNull(contaModel);
+            Assertions.assertNotNull(contaMock.getCodigo());
+            Assertions.assertEquals(contaMock.getNconta(), contaMock.getNconta());
+        }
+
+        private ContaModel contaPadrao() {
+            UsuarioModel usuarioModel =  new UsuarioModel(1, "Lana Carriel", "46860077808",
+                    "Rua Major Mariano, Vila Ferrieira, 1512", "14981030177", ContaEnum.FISICA);
+
+            return new ContaModel(1, usuarioModel, "89756983", "5765", 0,
+                    1200.0, 18, ContaEnum.FISICA);
+        }
 }
