@@ -37,7 +37,7 @@ public enum ContaEnum {
         return desc;
     }
 
-    public static ContaEnum getByTipoConta(String tipo){
+    public static ContaEnum getByTipoConta(String tipo) {
         if (ContaEnum.FISICA.getDesc().equalsIgnoreCase(tipo)) {
             return ContaEnum.FISICA;
         } else if (ContaEnum.JURIDICA.getDesc().equalsIgnoreCase(tipo)) {

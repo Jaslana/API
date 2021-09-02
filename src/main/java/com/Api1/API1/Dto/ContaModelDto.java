@@ -1,9 +1,7 @@
 package com.Api1.API1.Dto;
 
 import com.Api1.API1.Model.ContaModel;
-import com.Api1.API1.Model.UsuarioModel;
 import com.Api1.API1.Repository.ContaRepository;
-import com.Api1.API1.Repository.UsuarioRepository;
 import com.sun.istack.NotNull;
 import lombok.Getter;
 import lombok.Setter;

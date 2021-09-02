@@ -4,7 +4,6 @@ package com.Api1.API1.Dto;
 import com.sun.istack.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.validator.constraints.br.CPF;
 
 @Getter
 @Setter

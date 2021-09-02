@@ -3,7 +3,6 @@ package com.Api1.API1.Controller;
 
 import com.Api1.API1.Dto.UsuarioModelDto;
 import com.Api1.API1.Model.ContaModel;
-import com.Api1.API1.Model.OperacoesModel;
 import com.Api1.API1.Model.UsuarioModel;
 import com.Api1.API1.Repository.ContaRepository;
 import com.Api1.API1.Repository.UsuarioRepository;
@@ -95,13 +94,14 @@ public class UsuarioController {
     @DeleteMapping(value = "api/usuarios/delete/")
     public ResponseEntity<?> delete(@RequestParam String cpf) {
         Optional<UsuarioModel> usuario = usuarioRepository.findByCpf(cpf);
-        List<ContaModel> contas = contaRepository.findAllByUsuarioCpf(cpf);
-        if (contas.isEmpty()) {
+        List<ContaModel> conta = contaRepository.findAllByUsuarioCpf(cpf);
+
+        if (conta.size() == 0) {
             if (usuario.isPresent()) {
                 usuarioRepository.delete(usuario.get());
                 JSONObject json = new JSONObject();
-                json.put("Campo", usuario);
                 json.put("Menssagem", "Deletada com sucesso!");
+                json.put("Campo", usuario);
                 return ResponseEntity.accepted().body(json);
             } else {
                 JSONObject json = new JSONObject();
@@ -110,9 +110,13 @@ public class UsuarioController {
                 return ResponseEntity.badRequest().body(json);
             }
         }
-        String json = "Existe " + contas.size() + "conta/s cadastrada nesse cpf ." + contas.get(contas.size());
+        JSONObject json = new JSONObject();
+        json.put("Campo", conta);
+        json.put("Erro", "Existe Conta/s atreladas a esse usuario");
+
         return ResponseEntity.badRequest().body(json);
     }
-
-
 }
+
+
+

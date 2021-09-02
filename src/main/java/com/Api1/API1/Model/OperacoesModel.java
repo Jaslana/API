@@ -1,11 +1,12 @@
 package com.Api1.API1.Model;
 
 
-import com.Api1.API1.Dto.OperacoesDto;
 import com.sun.istack.NotNull;
-import org.hibernate.validator.constraints.br.CPF;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import java.time.LocalDateTime;
 
 

@@ -34,20 +34,20 @@ public class TaxaImpl implements Taxa {
     public Optional<ResponseEntity<ContaModel>> sacarConta(@RequestBody OperacoesModel model) {
         reconhecerTipoConta(model.getNumeroConta());
         Optional<ContaModel> conta = repository.findBynconta(model.getNumeroConta());
-            return conta.map(record -> {
-                if (record.getQtdSaques() > getQtdsaques()) {
-                    record.setSaldo(record.getSaldo() - model.getValor() - getTaxa());
-                    ContaModel updated = repository.save(record);
-                    operacoesRepository.save(model);
-                    return ResponseEntity.ok().body(updated);
-                } else {
-                    record.setSaldo(record.getSaldo() - model.getValor());
-                    ContaModel updated = repository.save(record);
-                    operacoesRepository.save(model);
-                    return ResponseEntity.ok().body(updated);
-                }
-            });
-        }
+        return conta.map(record -> {
+            if (record.getQtdSaques() > getQtdsaques()) {
+                record.setSaldo(record.getSaldo() - model.getValor() - getTaxa());
+                ContaModel updated = repository.save(record);
+                operacoesRepository.save(model);
+                return ResponseEntity.ok().body(updated);
+            } else {
+                record.setSaldo(record.getSaldo() - model.getValor());
+                ContaModel updated = repository.save(record);
+                operacoesRepository.save(model);
+                return ResponseEntity.ok().body(updated);
+            }
+        });
+    }
 
     @Override
     public Optional<ResponseEntity<ContaModel>> depositarConta(@RequestBody OperacoesModel model) {

@@ -17,6 +17,7 @@ public class UsuarioTest {
     UsuarioController usuarioController;
     @MockBean
     UsuarioRepository usuarioRepository;
+
     @BeforeEach
     public void setUp() {
         this.usuarioController = new UsuarioController(usuarioRepository);
@@ -24,21 +25,21 @@ public class UsuarioTest {
 
 
     @Test
-     void save_SalvarUsuario(){
+    void save_SalvarUsuario() {
 
-        UsuarioModel usuarioModel  = clientePadrao();
+        UsuarioModel usuarioModel = clientePadrao();
 
         UsuarioModel usuarioMock = clientePadrao();
         usuarioMock.setId(1);
 
         Mockito.when(usuarioRepository.save(usuarioModel)).thenReturn(usuarioMock);
-//           ResponseEntity<UsuarioModel> usuarioSalvo = (ResponseEntity<UsuarioModel>) this.usuarioController.salvarUsuario(usuario);
         Assertions.assertNotNull(usuarioModel);
         Assertions.assertNotNull(usuarioMock.getId());
         Assertions.assertEquals(usuarioModel.getCpf(), usuarioMock.getCpf());
     }
-    private UsuarioModel clientePadrao(){
-        return new UsuarioModel(1,"Lana Carriel", "46860077808", "Rua Major Mariano, Vila Ferrieira, 1512", "14981030177", ContaEnum.FISICA);
+
+    private UsuarioModel clientePadrao() {
+        return new UsuarioModel(1, "Lana Carriel", "46860077808", "Rua Major Mariano, Vila Ferrieira, 1512", "14981030177", ContaEnum.FISICA);
     }
 
 }

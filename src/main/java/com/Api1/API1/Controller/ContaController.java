@@ -27,32 +27,33 @@ public class ContaController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    public ContaController(ContaRepository contaRepository) {
+    }
+
+
     @PostMapping(path = "/api/contas/salvar")
     public ResponseEntity<?> salvar(@RequestBody @Valid ContaModel contaModel,
                                     UriComponentsBuilder uriBuilder) {
         Optional<ContaModel> conta = contaRepository.findBynconta(contaModel.getNconta());
         Optional<UsuarioModel> busca = usuarioRepository.findById(contaModel.getUsuario().getId());
-
-            if (conta.isPresent()) {
-                JSONObject json = new JSONObject();
-                json.put("Erro", "Essa conta ja existe!");
-                json.put("Campo", conta);
-                return ResponseEntity.badRequest().body(json);
-            }else {
-                if (busca.isPresent()) {
-                    URI uri = uriBuilder.path("/conta").buildAndExpand(contaModel.getCodigo()).toUri();
-                    Integer inicio = 0;
-                    contaModel.setQtdSaques(inicio);
-                    Optional<UsuarioModel> usuarioModel = usuarioRepository.findById(contaModel.getUsuario().getId());
-                    contaModel.setUsuario(usuarioModel.get());
-                    return ResponseEntity.created(uri).body(contaRepository.save(contaModel));
-                }
-                    JSONObject json = new JSONObject();
-                    json.put("Menssagem", "Esse usuario nao existe!");
-                    json.put("Campo:", "ID: " + contaModel.getUsuario().getId());
-                    return ResponseEntity.badRequest().body(json);
+        if (conta.isPresent()) {
+            JSONObject json = new JSONObject();
+            json.put("Erro", "Essa conta ja existe!");
+            json.put("Campo", conta);
+            return ResponseEntity.badRequest().body(json);
+        } else {
+            if (busca.isPresent()) {
+                URI uri = uriBuilder.path("/conta").buildAndExpand(contaModel.getCodigo()).toUri();
+                contaModel.setQtdSaques(0);
+                contaModel.setUsuario(busca.get());
+                return ResponseEntity.created(uri).body(contaRepository.save(contaModel));
             }
+            JSONObject json = new JSONObject();
+            json.put("Menssagem", "Esse usuario nao existe!");
+            json.put("Campo:", "ID: " + contaModel.getUsuario().getId());
+            return ResponseEntity.badRequest().body(json);
         }
+    }
 
 
     @GetMapping(path = "/api/contas/")
@@ -61,7 +62,7 @@ public class ContaController {
         if (conta.isPresent()) {
             JSONObject json = new JSONObject();
             json.put("Campo", conta);
-            json.put("Menssagem", "Conta econtrada com sucesso!" );
+            json.put("Menssagem", "Conta econtrada com sucesso!");
             return ResponseEntity.accepted().body(json);
         } else {
             JSONObject json = new JSONObject();
@@ -75,6 +76,8 @@ public class ContaController {
     public List<ContaModel> consultarTodos() {
         return contaRepository.findAll();
     }
+
+    
 
     @PutMapping("/api/contas/alterar/")
     @Transactional
@@ -102,7 +105,7 @@ public class ContaController {
             json.put("Campo", conta);
             json.put("Menssagem", "Conta deletada com sucesso!");
             return ResponseEntity.accepted().body(json);
-            } else {
+        } else {
             JSONObject json = new JSONObject();
             json.put("Erro", "Essa conta nao existe!");
             json.put("Campo", nconta);
