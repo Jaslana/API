@@ -38,11 +38,13 @@ public class TaxaImpl implements Taxa {
             if (record.getQtdSaques() > getQtdsaques()) {
                 record.setSaldo(record.getSaldo() - model.getValor() - getTaxa());
                 ContaModel updated = repository.save(record);
+                model.setTaxa(getTaxa());
                 operacoesRepository.save(model);
                 return ResponseEntity.ok().body(updated);
             } else {
                 record.setSaldo(record.getSaldo() - model.getValor());
                 ContaModel updated = repository.save(record);
+                model.setTaxa(0);
                 operacoesRepository.save(model);
                 return ResponseEntity.ok().body(updated);
             }

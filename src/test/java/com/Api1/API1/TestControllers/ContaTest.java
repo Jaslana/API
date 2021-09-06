@@ -1,6 +1,6 @@
 package com.Api1.API1.TestControllers;
 
-import com.Api1.API1.Controller.ContaController;
+import com.Api1.API1.Service.ContaService;
 import com.Api1.API1.Model.ContaEnum;
 import com.Api1.API1.Model.ContaModel;
 import com.Api1.API1.Model.UsuarioModel;
@@ -18,13 +18,13 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 public class ContaTest {
 
         @MockBean
-        ContaController contaController;
+        ContaService contaController;
         @MockBean
         ContaRepository contaRepository;
 
         @BeforeEach
         public void setUp() {
-            this.contaController = new ContaController(contaRepository);
+            this.contaController = new ContaService(contaRepository);
         }
 
 

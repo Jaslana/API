@@ -1,6 +1,6 @@
 package com.Api1.API1.TestControllers;
 
-import com.Api1.API1.Controller.UsuarioController;
+import com.Api1.API1.Service.UsuarioService;
 import com.Api1.API1.Model.ContaEnum;
 import com.Api1.API1.Model.UsuarioModel;
 import com.Api1.API1.Repository.UsuarioRepository;
@@ -14,13 +14,13 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 @SpringBootTest
 public class UsuarioTest {
     @MockBean
-    UsuarioController usuarioController;
+    UsuarioService usuarioController;
     @MockBean
     UsuarioRepository usuarioRepository;
 
     @BeforeEach
     public void setUp() {
-        this.usuarioController = new UsuarioController(usuarioRepository);
+        this.usuarioController = new UsuarioService(usuarioRepository);
     }
 
 

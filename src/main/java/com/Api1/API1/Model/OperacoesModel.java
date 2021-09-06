@@ -19,17 +19,19 @@ public class OperacoesModel {
     public String numeroConta;
     @NotNull
     public double valor;
+    public double taxa;
     @NotNull
     private TipoOperacaoEnum tipoOperacao;
     @NotNull
     private LocalDateTime data = LocalDateTime.now();
 
-    public OperacoesModel(Integer id, String numeroConta, double valor, TipoOperacaoEnum tipoOperacao, LocalDateTime data) {
+    public OperacoesModel(Integer id, double taxa, String numeroConta, double valor, TipoOperacaoEnum tipoOperacao, LocalDateTime data) {
         this.id = id;
         this.numeroConta = numeroConta;
         this.valor = valor;
         this.tipoOperacao = tipoOperacao;
         this.data = data;
+        this.taxa = taxa;
     }
 
     public OperacoesModel() {
@@ -57,6 +59,14 @@ public class OperacoesModel {
 
     public void setValor(double valor) {
         this.valor = valor;
+    }
+
+    public double getTaxa() {
+        return taxa;
+    }
+
+    public void setTaxa(double taxa) {
+        this.taxa = taxa;
     }
 
     public TipoOperacaoEnum getTipoOperacao() {
