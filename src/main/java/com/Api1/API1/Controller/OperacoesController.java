@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.validation.Valid;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 @RestController
@@ -26,14 +27,13 @@ public class OperacoesController {
     }
 
     @PostMapping("/deposito")
-    public ResponseEntity<?> salvarTransacaoDeposito(@RequestBody @Valid OperacoesModel model,
-                                                     UriComponentsBuilder uriBuilder) {
-        return operacoesService.salvarTransacaoDeposito(model, uriBuilder);
+    public ResponseEntity<OperacoesModel> salvarTransacaoDeposito(@RequestBody @Valid String nconta) {
+        return operacoesService.salvarTransacaoDeposito(nconta);
     }
 
     @PutMapping("/operacoes/transferir")
-    public ResponseEntity<?> transferencias(@RequestBody @Valid OperacoesDto model,
-                                            UriComponentsBuilder uriBuilder) {
+    public Optional<Object> transferencias(@RequestBody @Valid OperacoesDto model,
+                                           UriComponentsBuilder uriBuilder) {
         return operacoesService.transferencias(model, uriBuilder);
     }
 

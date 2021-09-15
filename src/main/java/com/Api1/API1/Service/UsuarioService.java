@@ -2,12 +2,16 @@ package com.Api1.API1.Service;
 
 
 import com.Api1.API1.Dto.UsuarioModelDto;
+import com.Api1.API1.Exception.ExceptionDefault;
+
+import com.Api1.API1.Exception.RuntimeExceptionCPF;
 import com.Api1.API1.Model.ContaModel;
 import com.Api1.API1.Model.UsuarioModel;
 import com.Api1.API1.Repository.ContaRepository;
 import com.Api1.API1.Repository.UsuarioRepository;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -15,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -32,35 +37,23 @@ public class UsuarioService {
     public UsuarioService(UsuarioRepository usuarioRepository) {
     }
 
-    public ResponseEntity<?> salvarUsuario(UsuarioModel usuarioModel, UriComponentsBuilder uriBuilder) {
-        Optional<UsuarioModel> usuario = usuarioRepository.findByCpf(usuarioModel.getCpf());
-        if (usuario.isPresent()) {
-            JSONObject json = new JSONObject();
-            json.put("Campo", usuario);
-            json.put("Mensagem:", "Esse usuario ja existe");
-            return ResponseEntity.badRequest().body(json);
-        }
-        JSONObject json = new JSONObject();
-        json.put("Campo", usuario);
-        json.put("Menssagem", "Usuario cadastrado com sucesso!");
-        URI uri = uriBuilder.path("/usuarios").buildAndExpand(usuarioModel.getId()).toUri();
-        return ResponseEntity.created(uri).body(usuarioRepository.save(usuarioModel));
+    public ResponseEntity<UsuarioModel> salvar(UsuarioModel usuarioModel) {
+        UsuarioModel usuario = usuarioRepository.findByCpf(usuarioModel.getCpf()).map(busca->{
+            if(busca.getId() >= 1){
+                throw new IllegalStateException("Usuario ja existe");
+            }
+            return busca;
+        }).orElseGet(() ->
+            usuarioRepository.save(usuarioModel));
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuario);
     }
 
-    public ResponseEntity consutarCpf(String cpf) {
-        Optional<UsuarioModel> usuario = usuarioRepository.findByCpf(cpf);
-        if (usuario.isPresent()) {
-            JSONObject json = new JSONObject();
-            json.put("Campo", usuario);
-            json.put("Menssagem", "Usuario econtrado com sucesso!");
+    public ResponseEntity<UsuarioModel> consutarCpf(String cpf) {
+        UsuarioModel usuarioModel = usuarioRepository.findByCpf(cpf).orElseThrow(() ->
+                new RuntimeExceptionCPF("Usuario nao encontrado"));
 
-            return ResponseEntity.accepted().body(json);
-        } else {
-            JSONObject json = new JSONObject();
-            json.put("Menssagem", "Essa usuario nao existe!");
-            json.put("Campo:", "CPF: " + cpf);
-            return ResponseEntity.badRequest().body(json);
-        }
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(usuarioModel);
     }
 
     public List<UsuarioModel> consultarTodos() {
@@ -69,47 +62,23 @@ public class UsuarioService {
 
 
     @Transactional
-    public ResponseEntity<?> atualizar(String cpf, UsuarioModelDto usuario, UriComponentsBuilder uriBuilder) {
-        Optional<UsuarioModel> busca = usuarioRepository.findByCpf(cpf);
-        if (busca.isPresent()) {
-            UsuarioModel usuarioModel = usuario.atualizar(cpf, usuarioRepository);
-            URI uri = uriBuilder.path("/usuarios").buildAndExpand(usuarioModel.getId()).toUri();
-            JSONObject json = new JSONObject();
-            json.put("Campo", usuario);
-            json.put("Menssagem", "Usuario atualizado com sucesso!");
-            return ResponseEntity.created(uri).body(new UsuarioModelDto(usuarioModel));
-        } else {
-            JSONObject json = new JSONObject();
-            json.put("Erro", "Esse usuario nao existe!");
-            json.put("Campo", cpf);
-            return ResponseEntity.badRequest().body(json);
-        }
+    public ResponseEntity<UsuarioModel> atualizar(String cpf, UsuarioModelDto usuarioModelDto) {
+
+        UsuarioModel usuarioModel = usuarioRepository.findByCpf(cpf).orElseThrow(() ->
+                new ExceptionDefault("Usuario nao encontrado"));
+
+        usuarioModelDto.atualizar(cpf, usuarioRepository);
+
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(usuarioModel);
 
     }
 
-    public ResponseEntity<?> delete(String cpf) {
-        Optional<UsuarioModel> usuario = usuarioRepository.findByCpf(cpf);
-        List<ContaModel> conta = contaRepository.findAllByUsuarioCpf(cpf);
+    public ResponseEntity<UsuarioModel> delete(String cpf) {
 
-        if (conta.size() == 0) {
-            if (usuario.isPresent()) {
-                usuarioRepository.delete(usuario.get());
-                JSONObject json = new JSONObject();
-                json.put("Menssagem", "Deletada com sucesso!");
-                json.put("Campo", usuario);
-                return ResponseEntity.accepted().body(json);
-            } else {
-                JSONObject json = new JSONObject();
-                json.put("Erro", "Esse usuario nao existe!");
-                json.put("Campo", cpf);
-                return ResponseEntity.badRequest().body(json);
-            }
-        }
-        JSONObject json = new JSONObject();
-        json.put("Campo", conta);
-        json.put("Erro", "Existe Conta/s atreladas a esse usuario");
+        UsuarioModel usuarioModel = usuarioRepository.findByCpf(cpf).orElseThrow(()-> new ExceptionDefault("Usuario nao encontrado"));
+        usuarioRepository.delete(usuarioModel);
 
-        return ResponseEntity.badRequest().body(json);
+        return  ResponseEntity.noContent().build();
     }
 }
 

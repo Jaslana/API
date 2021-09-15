@@ -22,9 +22,8 @@ public class UsuarioController {
 
     @PostMapping(path = "/api/usuarios/salvar")
     @Transactional
-    public ResponseEntity<?> salvarUsuario(@RequestBody @Valid UsuarioModel usuarioModel,
-                                           UriComponentsBuilder uriBuilder) {
-        return usuarioService.salvarUsuario(usuarioModel, uriBuilder);
+    public ResponseEntity<UsuarioModel> salvarUsuario(@RequestBody @Valid UsuarioModel usuarioModel) {
+        return usuarioService.salvar(usuarioModel);
 
     }
 
@@ -40,9 +39,9 @@ public class UsuarioController {
     }
 
     @PutMapping("/api/usuarios/alterar/")
-    public ResponseEntity<?> atualizar(@RequestParam String cpf, @RequestBody
-    @Valid UsuarioModelDto usuario, UriComponentsBuilder uriBuilder) {
-        return usuarioService.atualizar(cpf, usuario, uriBuilder);
+    public ResponseEntity<UsuarioModel> atualizar(@RequestParam String cpf, @RequestBody
+    @Valid UsuarioModelDto usuarioModelDto) {
+        return usuarioService.atualizar(cpf, usuarioModelDto);
     }
 
     @DeleteMapping(value = "api/usuarios/delete/")

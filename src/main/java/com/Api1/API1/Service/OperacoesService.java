@@ -1,6 +1,7 @@
 package com.Api1.API1.Service;
 
 import com.Api1.API1.Dto.OperacoesDto;
+import com.Api1.API1.Exception.ExceptionDefault;
 import com.Api1.API1.Interface.impl.TaxaImpl;
 import com.Api1.API1.Kafka.KafkaProducerSaque;
 import com.Api1.API1.Model.ContaModel;
@@ -10,10 +11,12 @@ import com.Api1.API1.Repository.ContaRepository;
 import com.Api1.API1.Repository.OperacoesRepository;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -32,63 +35,42 @@ public class OperacoesService extends TaxaImpl {
     @Autowired
     private OperacoesRepository operacoesRepository;
 
-    public ResponseEntity<?> buscarExtrato(String numeroConta) {
-        List<OperacoesModel> busca = operacoesRepository.findAllByNumeroConta(String.valueOf(numeroConta));
-        if (busca.isEmpty()) {
-            JSONObject json = new JSONObject();
-            json.put("erro", "Essa conta " + numeroConta + " não possui extrato ou não existe!");
-            json.put("campo","numeroConta");
-            return ResponseEntity.badRequest().body(json);
-        }
-        return ResponseEntity.ok().body(operacoesRepository.findAllByNumeroConta(String.valueOf(numeroConta)));
+    public ResponseEntity<OperacoesModel> buscarExtrato(String numeroConta) {
+        List <OperacoesModel> operacoesModel = Optional.ofNullable(operacoesRepository.findAllByNumeroConta(numeroConta))
+                .orElseThrow(() -> new ExceptionDefault("Deu ruim parça"));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(operacoesModel.get(operacoesModel.size()));
     }
 
-    public ResponseEntity<?> salvarTransacaoDeposito(OperacoesModel model, UriComponentsBuilder uriBuilder) {
-        Optional<ContaModel> busca = contaRepository.findBynconta(model.getNumeroConta());
-        if (busca.isPresent()) {
-            if (model.getTipoOperacao().equals(TipoOperacaoEnum.Deposito)) {
-                operacoesRepository.save(model);
-                depositarConta(model);
-                URI uri = uriBuilder.path("/contas/{id}").buildAndExpand(model.getId()).toUri();
-                return ResponseEntity.created(uri).body(model);
-            }
-        }
-        JSONObject json = new JSONObject();
-        json.put("Campo", model.getNumeroConta());
-        json.put("Mensagem:", "O numero de conta nao existe");
-        return ResponseEntity.badRequest().body(json);
+    public ResponseEntity<OperacoesModel> salvarTransacaoDeposito(String nconta) {
+        OperacoesModel operacoesModel = operacoesRepository.findByNumeroConta(nconta).orElseThrow(() -> new ExceptionDefault("Essa transação nao existe"));
+                operacoesRepository.save(operacoesModel);
+                depositarConta(operacoesModel);
+                return ResponseEntity.status(HttpStatus.CREATED).body(operacoesModel);
     }
 
-    public ResponseEntity<?> transferencias(OperacoesDto model,
-                                                         UriComponentsBuilder uriBuilder) {
-        Optional<ContaModel> conta1 = contaRepository.findBynconta(model.getNumeroContaEntrada());
-        Optional<ContaModel> conta2 = contaRepository.findBynconta(model.getNumeroContaSaida());
-        if(conta1.isPresent()) {
-            if (conta2.isPresent()) {
-                OperacoesModel transacaoEntrada = new OperacoesModel(model.getId(),0, model.getNumeroContaEntrada(),
-                        model.getValor(), TipoOperacaoEnum.TransferenciaEntrada, LocalDateTime.now());
-                OperacoesModel transacaoSaida = new OperacoesModel(model.getId(), 0,model.getNumeroContaSaida(),
-                        model.getValor(), TipoOperacaoEnum.TransferenciaSaida, LocalDateTime.now());
-                transferirContas(transacaoEntrada);
-                transferirContasSaida(transacaoSaida);
-                operacoesRepository.save(transacaoEntrada);
-                operacoesRepository.save(transacaoSaida);
-                URI uri = uriBuilder.path("/contas/{id}").buildAndExpand(transacaoSaida.getId()).toUri();
-                return ResponseEntity.created(uri).body(transacaoSaida);
-            }
-            JSONObject json = new JSONObject();
-            json.put("Campo:", model.getNumeroContaSaida());
-            json.put("Mensagem:", "O numero de conta nao existe");
-            return ResponseEntity.badRequest().body(json);
+    public Optional<Object> transferencias(OperacoesDto model, UriComponentsBuilder uriBuilder) {
+        Optional<Object> conta1 = contaRepository.findBynconta(model.getNumeroContaEntrada()).map(record -> {
+           Optional<Object> conta2 = contaRepository.findBynconta(model.getNumeroContaSaida()).map(busca -> {
+                    OperacoesModel transacaoEntrada = new OperacoesModel(model.getId(), 0, model.getNumeroContaEntrada(), model.getValor(), TipoOperacaoEnum.TransferenciaEntrada, LocalDateTime.now());
+                    OperacoesModel transacaoSaida = new OperacoesModel(model.getId(), 0, model.getNumeroContaSaida(), model.getValor(), TipoOperacaoEnum.TransferenciaSaida, LocalDateTime.now());
+                    transferirContas(transacaoEntrada);
+                    transferirContasSaida(transacaoSaida);
+                    operacoesRepository.save(transacaoEntrada);
+                    operacoesRepository.save(transacaoSaida);
+                    return ResponseEntity.status(HttpStatus.CREATED).body(transacaoSaida);
+                });
+            return conta2;
+        });
+        if (conta1.isPresent()){
+            new ExceptionDefault("As isso não existe");
         }
-        JSONObject json = new JSONObject();
-        json.put("Campo:", model.getNumeroContaEntrada());
-        json.put("Mensagem:", "O numero de conta nao existe");
-        return ResponseEntity.badRequest().body(json);
+    return conta1;
+    //responder com oj diferente
     }
+
 
     public ResponseEntity<?> salvarTransacaoSaque(OperacoesModel model, UriComponentsBuilder uriBuilder)
-            throws ExecutionException, InterruptedException, ExecutionException {
+            throws  InterruptedException, ExecutionException {
         Optional<ContaModel> busca = contaRepository.findBynconta(model.getNumeroConta());
         if (busca.isPresent()) {
             if (model.getTipoOperacao().equals(TipoOperacaoEnum.Saque)) {

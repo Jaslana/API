@@ -2,19 +2,19 @@ package com.Api1.API1.Service;
 
 
 import com.Api1.API1.Dto.ContaModelDto;
+import com.Api1.API1.Exception.ExceptionDefault;
 import com.Api1.API1.Model.ContaModel;
 import com.Api1.API1.Model.UsuarioModel;
 import com.Api1.API1.Repository.ContaRepository;
 import com.Api1.API1.Repository.UsuarioRepository;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.transaction.Transactional;
-import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -56,58 +56,36 @@ public class ContaService {
     }
 
 
-    public ResponseEntity<?> consutarNConta(String nconta) {
-        Optional<ContaModel> conta = contaRepository.findBynconta(nconta);
-        if (conta.isPresent()) {
-            JSONObject json = new JSONObject();
-            json.put("Campo", conta);
-            json.put("Menssagem", "Conta econtrada com sucesso!");
-            return ResponseEntity.accepted().body(json);
-        } else {
-            JSONObject json = new JSONObject();
-            json.put("Menssagem", "Essa conta nao existe!");
-            json.put("Campo:", "NumeroConta: " + nconta);
-            return ResponseEntity.badRequest().body(json);
-        }
+    public ResponseEntity<ContaModel> consutarNConta(String nconta) {
+
+        ContaModel contaModel = contaRepository.findBynconta(nconta).orElseThrow(() -> new ExceptionDefault("Conta não encontrada"));
+
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(contaModel) ;
     }
+
 
     public List<ContaModel> consultarTodos() {
         return contaRepository.findAll();
     }
 
     @Transactional
-    public ResponseEntity<?> atualizar(String nConta, ContaModelDto conta, UriComponentsBuilder uriBuilder) {
-        Optional<ContaModel> busca = contaRepository.findBynconta(nConta);
-        if (busca.isPresent()) {
-            ContaModel contaModel = conta.atualizar(nConta, contaRepository);
-            URI uri = uriBuilder.path("/conta").buildAndExpand(contaModel.getCodigo()).toUri();
-            return ResponseEntity.created(uri).body(new ContaModelDto(contaModel));
-        }
-        JSONObject json = new JSONObject();
-        json.put("Erro", "Essa conta nao existe!");
-        json.put("Campo", "NumeroConta: " + nConta);
-        return ResponseEntity.badRequest().body(json);
+    public ResponseEntity<ContaModel> atualizar(String nConta, ContaModelDto contaModelDto) {
 
+        ContaModel conta = contaRepository.findBynconta(nConta).orElseThrow(() -> new ExceptionDefault("Conta não encontrada"));
+        contaModelDto.atualizar(nConta, contaRepository);
+
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(conta);
     }
 
-    public ResponseEntity<?> deletarConta(String nconta) {
-        Optional<ContaModel> conta = contaRepository.findBynconta(nconta);
-        if (conta.isPresent()) {
-            contaRepository.delete(conta.get());
-            JSONObject json = new JSONObject();
-            json.put("Campo", conta);
-            json.put("Menssagem", "Conta deletada com sucesso!");
-            return ResponseEntity.accepted().body(json);
-        } else {
-            JSONObject json = new JSONObject();
-            json.put("Erro", "Essa conta nao existe!");
-            json.put("Campo", nconta);
-            return ResponseEntity.badRequest().body(json);
-        }
+    public ResponseEntity<ContaModel> deletarConta(String nconta) {
 
+            ContaModel contaModel = contaRepository.findBynconta(nconta).orElseThrow(()-> new ExceptionDefault("Conta não encontrada"));
+            contaRepository.delete(contaModel);
 
+            return ResponseEntity.noContent().build();
     }
 }
+
 
 
 

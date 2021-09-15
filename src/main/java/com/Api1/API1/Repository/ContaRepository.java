@@ -16,5 +16,4 @@ public interface ContaRepository extends JpaRepository<ContaModel, Integer> {
     Optional<ContaModel> findBynconta(String nconta);
 
     List<ContaModel> findAllByUsuarioCpf(String cpf);
-
 }

@@ -11,6 +11,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -36,9 +37,9 @@ public class ContaController {
     }
 
     @PutMapping("/api/contas/alterar/")
-    public ResponseEntity<?> atualizar(@RequestParam String nConta, @RequestBody
-    @Valid ContaModelDto conta, UriComponentsBuilder uriBuilder) {
-        return contaService.atualizar(nConta, conta, uriBuilder);
+    public ResponseEntity<ContaModel> atualizar(@RequestParam String nConta, @RequestBody
+    @Valid ContaModelDto conta) {
+        return contaService.atualizar(nConta, conta);
     }
 
     @DeleteMapping(value = "api/contas/delete/")
