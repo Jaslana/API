@@ -2,6 +2,7 @@ package com.Api1.API1.Controller;
 
 import com.Api1.API1.Dto.ContaModelDto;
 import com.Api1.API1.Model.ContaModel;
+import com.Api1.API1.Model.UsuarioModel;
 import com.Api1.API1.Service.ContaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +22,8 @@ public class ContaController {
     private ContaService contaService;
 
     @PostMapping(path = "/api/contas/salvar")
-    public ResponseEntity<ContaModel> salvar(@RequestBody @Valid ContaModel contaModel) {
-        return contaService.salvar(contaModel);
+    public ResponseEntity<ContaModel> salvar(@RequestBody @Valid ContaModel contaModel, UsuarioModel usuarioModel, String nconta) {
+        return contaService.salvar(contaModel, usuarioModel, nconta);
     }
 
     @GetMapping(path = "/api/contas/")

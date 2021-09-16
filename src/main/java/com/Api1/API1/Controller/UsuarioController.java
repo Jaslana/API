@@ -22,8 +22,8 @@ public class UsuarioController {
 
     @PostMapping(path = "/api/usuarios/salvar")
     @Transactional
-    public ResponseEntity<UsuarioModel> salvarUsuario(@RequestBody @Valid UsuarioModel usuarioModel) {
-        return usuarioService.salvar(usuarioModel);
+    public ResponseEntity<UsuarioModel> salvarUsuario(@RequestBody @Valid UsuarioModel usuarioModel, String cpf) {
+        return usuarioService.salvar(usuarioModel, cpf);
 
     }
 

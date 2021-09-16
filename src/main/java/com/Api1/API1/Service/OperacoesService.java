@@ -1,14 +1,11 @@
 package com.Api1.API1.Service;
 
 import com.Api1.API1.Dto.OperacoesDto;
-import com.Api1.API1.Exception.ExceptionDefault;
-import com.Api1.API1.Exception.RuntimeExceptionCPF;
 import com.Api1.API1.Interface.impl.TaxaImpl;
 import com.Api1.API1.Kafka.KafkaProducerSaque;
 import com.Api1.API1.Model.ContaModel;
 import com.Api1.API1.Model.OperacoesModel;
 import com.Api1.API1.Model.TipoOperacaoEnum;
-import com.Api1.API1.Model.UsuarioModel;
 import com.Api1.API1.Repository.ContaRepository;
 import com.Api1.API1.Repository.OperacoesRepository;
 import org.json.simple.JSONObject;
@@ -18,11 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 

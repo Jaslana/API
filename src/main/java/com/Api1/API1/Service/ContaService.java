@@ -2,8 +2,8 @@ package com.Api1.API1.Service;
 
 
 import com.Api1.API1.Dto.ContaModelDto;
-import com.Api1.API1.Exception.RuntimeExceptionCPF;
-import com.Api1.API1.Exception.RuntimeExceptionNconta;
+import com.Api1.API1.Exception.ContaJaCadastrada;
+import com.Api1.API1.Exception.ContaNaoEncontradaNconta;
 import com.Api1.API1.Model.ContaModel;
 import com.Api1.API1.Model.UsuarioModel;
 import com.Api1.API1.Repository.ContaRepository;
@@ -31,11 +31,11 @@ public class ContaService {
     }
 
 
-    public ResponseEntity<ContaModel> salvar(ContaModel contaModel, UsuarioModel usuarioModel) {
+    public ResponseEntity<ContaModel> salvar(ContaModel contaModel, UsuarioModel usuarioModel, String nconta) {
         ContaModel conta = contaRepository.findBynconta(contaModel.getNconta()).map(busca->{
 //            UsuarioModel usuario = usuarioRepository.findById(usuarioModel.getId().)
             if(busca.getCodigo() >= 1){
-                throw new IllegalStateException("Conta ja existe");
+                throw new ContaJaCadastrada("Conta ja existe", nconta);
 
             }
 
@@ -56,7 +56,7 @@ public class ContaService {
     public ResponseEntity<ContaModel> consutarNConta(String nconta) {
 
         ContaModel conta = contaRepository.findBynconta(nconta).orElseThrow(() ->
-                new RuntimeExceptionNconta("Conta nao encontrado"));
+                new ContaNaoEncontradaNconta("Conta nao encontrado", nconta));
 
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(conta);
     }
@@ -72,7 +72,7 @@ public class ContaService {
     public ResponseEntity<ContaModel> atualizar(String nConta, ContaModelDto contaModelDto) {
 
         ContaModel conta = contaRepository.findBynconta(nConta).orElseThrow(() ->
-                new RuntimeExceptionNconta("Conta nao encontrado"));
+                new ContaNaoEncontradaNconta("Conta nao encontrado", nConta));
 
         contaModelDto.atualizar(nConta, contaRepository);
 
@@ -83,7 +83,7 @@ public class ContaService {
     public ResponseEntity<ContaModel> deletarConta(String nconta) {
 
         ContaModel conta = contaRepository.findBynconta(nconta).orElseThrow(() ->
-                new RuntimeExceptionNconta("Conta nao encontrado"));
+                new ContaNaoEncontradaNconta("Conta nao encontrado", nconta));
 
             contaRepository.delete(conta);
 

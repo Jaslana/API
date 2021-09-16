@@ -3,7 +3,8 @@ package com.Api1.API1.Service;
 
 import com.Api1.API1.Dto.UsuarioModelDto;
 
-import com.Api1.API1.Exception.RuntimeExceptionCPF;
+import com.Api1.API1.Exception.ClienteNaoEncontradoCPF;
+import com.Api1.API1.Exception.UsuarioJaCadastrado;
 import com.Api1.API1.Model.UsuarioModel;
 import com.Api1.API1.Repository.ContaRepository;
 import com.Api1.API1.Repository.UsuarioRepository;
@@ -27,10 +28,10 @@ public class UsuarioService {
     public UsuarioService(UsuarioRepository usuarioRepository) {
     }
 
-    public ResponseEntity<UsuarioModel> salvar(UsuarioModel usuarioModel) {
+    public ResponseEntity<UsuarioModel> salvar(UsuarioModel usuarioModel, String cpf) {
         UsuarioModel usuario = usuarioRepository.findByCpf(usuarioModel.getCpf()).map(busca->{
             if(busca.getId() >= 1){
-                throw new IllegalStateException("Usuario ja existe");
+                throw new UsuarioJaCadastrado("Usuario ja existe", cpf);
             }
             return busca;
         }).orElseGet(() ->
@@ -42,7 +43,7 @@ public class UsuarioService {
 
     public ResponseEntity<UsuarioModel> consutarCpf(String cpf) {
         UsuarioModel usuarioModel = usuarioRepository.findByCpf(cpf).orElseThrow(() ->
-                new RuntimeExceptionCPF("Usuario nao encontrado"));
+                new ClienteNaoEncontradoCPF("Usuario nao encontrado", cpf));
 
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(usuarioModel);
     }
@@ -56,7 +57,7 @@ public class UsuarioService {
     public ResponseEntity<UsuarioModel> atualizar(String cpf, UsuarioModelDto usuarioModelDto) {
 
         UsuarioModel usuarioModel = usuarioRepository.findByCpf(cpf).orElseThrow(() ->
-                new RuntimeExceptionCPF("Usuario nao encontrado"));
+                new ClienteNaoEncontradoCPF("Usuario nao encontrado", cpf));
 
         usuarioModelDto.atualizar(cpf, usuarioRepository);
 
@@ -67,7 +68,7 @@ public class UsuarioService {
     public ResponseEntity<UsuarioModel> delete(String cpf) {
 
         UsuarioModel usuarioModel = usuarioRepository.findByCpf(cpf).orElseThrow(() ->
-                new RuntimeExceptionCPF("Usuario nao encontrado"));
+                new ClienteNaoEncontradoCPF("Usuario nao encontrado", cpf));
         usuarioRepository.delete(usuarioModel);
 
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(usuarioModel);
