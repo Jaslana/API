@@ -21,9 +21,8 @@ public class ContaController {
     private ContaService contaService;
 
     @PostMapping(path = "/api/contas/salvar")
-    public ResponseEntity<?> salvar(@RequestBody @Valid ContaModel contaModel,
-                                    UriComponentsBuilder uriBuilder) {
-        return contaService.salvar(contaModel, uriBuilder);
+    public ResponseEntity<ContaModel> salvar(@RequestBody @Valid ContaModel contaModel) {
+        return contaService.salvar(contaModel);
     }
 
     @GetMapping(path = "/api/contas/")

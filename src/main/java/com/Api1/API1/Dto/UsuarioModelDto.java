@@ -20,13 +20,7 @@ import java.util.stream.Collectors;
 @Setter
 public class UsuarioModelDto {
 
-    @Column(length = 50)
-    @Size(min = 5, max = 35, message = "Esse campo deve conter o nome e sobrenome")
-    @NotNull(message = "O nome é um campo obrigatorio")
-    private String nome;
-    @Column(length = 50)
-    @CPF
-    private String cpf;
+
     @Pattern(regexp = "([\\w\\W]+)\\s(\\d+)", message = "Informe o nome da Rua e o número apenas.")
     @NotNull(message = "O endereço é um campo obrigatorio")
     private String endereco;
@@ -35,8 +29,6 @@ public class UsuarioModelDto {
     public String fone;
 
     public UsuarioModelDto(UsuarioModel clienteModel) {
-        this.nome = clienteModel.getNome();
-        this.cpf = clienteModel.getCpf();
         this.fone = clienteModel.getFone();
         this.endereco = clienteModel.getEndereco();
     }
@@ -51,8 +43,6 @@ public class UsuarioModelDto {
     public UsuarioModel atualizar(String cpf, UsuarioRepository clienteRepository) {
         Optional<UsuarioModel> clienteModel = clienteRepository.findByCpf(cpf);
         clienteModel.map(alter -> {
-            alter.setNome(this.getNome());
-            alter.setCpf(this.getCpf());
             alter.setFone(this.getFone());
             alter.setEndereco(this.getEndereco());
             UsuarioModel updated = clienteRepository.save(alter);

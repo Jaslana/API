@@ -2,11 +2,13 @@ package com.Api1.API1.Service;
 
 import com.Api1.API1.Dto.OperacoesDto;
 import com.Api1.API1.Exception.ExceptionDefault;
+import com.Api1.API1.Exception.RuntimeExceptionCPF;
 import com.Api1.API1.Interface.impl.TaxaImpl;
 import com.Api1.API1.Kafka.KafkaProducerSaque;
 import com.Api1.API1.Model.ContaModel;
 import com.Api1.API1.Model.OperacoesModel;
 import com.Api1.API1.Model.TipoOperacaoEnum;
+import com.Api1.API1.Model.UsuarioModel;
 import com.Api1.API1.Repository.ContaRepository;
 import com.Api1.API1.Repository.OperacoesRepository;
 import org.json.simple.JSONObject;
@@ -36,16 +38,17 @@ public class OperacoesService extends TaxaImpl {
     private OperacoesRepository operacoesRepository;
 
     public ResponseEntity<OperacoesModel> buscarExtrato(String numeroConta) {
-        List <OperacoesModel> operacoesModel = Optional.ofNullable(operacoesRepository.findAllByNumeroConta(numeroConta))
-                .orElseThrow(() -> new ExceptionDefault("Deu ruim parça"));
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(operacoesModel.get(operacoesModel.size()));
+        OperacoesModel operacoesModel = operacoesRepository.findByNumeroConta(numeroConta).orElseThrow(() ->
+                new RuntimeExceptionCPF("Conta nao encontrado"));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(operacoesModel);
     }
 
     public ResponseEntity<OperacoesModel> salvarTransacaoDeposito(String nconta) {
-        OperacoesModel operacoesModel = operacoesRepository.findByNumeroConta(nconta).orElseThrow(() -> new ExceptionDefault("Essa transação nao existe"));
-                operacoesRepository.save(operacoesModel);
-                depositarConta(operacoesModel);
-                return ResponseEntity.status(HttpStatus.CREATED).body(operacoesModel);
+        OperacoesModel operacoesModel = operacoesRepository.findByNumeroConta(nconta).orElseThrow(() ->
+                new ExceptionDefault("Essa conta nao existe"));
+        operacoesRepository.save(operacoesModel);
+        depositarConta(operacoesModel);
+        return ResponseEntity.status(HttpStatus.CREATED).body(operacoesModel);
     }
 
     public Optional<Object> transferencias(OperacoesDto model, UriComponentsBuilder uriBuilder) {
@@ -66,6 +69,7 @@ public class OperacoesService extends TaxaImpl {
         }
     return conta1;
     //responder com oj diferente
+        //Revisar esse metodo
     }
 
 
@@ -81,6 +85,7 @@ public class OperacoesService extends TaxaImpl {
         json.put("Campo" , model.getNumeroConta());
         json.put("Mensagem:", "O numero de conta nao existe");
         return ResponseEntity.badRequest().body(json);
+        //Revisar esse metodo
     }
 
     public int teste(Integer qtdsaques){
@@ -117,5 +122,6 @@ public class OperacoesService extends TaxaImpl {
         KafkaProducerSaque ks = new KafkaProducerSaque();
         ks.EnviarDadosClienteSaque(model.getNumeroConta());
         return ResponseEntity.created(uri).body(json);
+    //revisar esse metodo
     }
 }

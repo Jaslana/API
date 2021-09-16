@@ -39,6 +39,16 @@ public class ExeptionsController {
         return ResponseEntity.badRequest().body(erroDefaultException);
     }
 
+    @ExceptionHandler(RuntimeExceptionNconta.class)
+    public ResponseEntity<GlobalErro> handle(RuntimeExceptionNconta exception){
+        GlobalErro erroDefaultException = new GlobalErro();
+
+        erroDefaultException.setCampo("Numero da Conta");
+        erroDefaultException.setErro(exception.getMessage());
+
+        return ResponseEntity.badRequest().body(erroDefaultException);
+    }
+
 
 
 //    @ExceptionHandler (HttpServerErrorException.InternalServerError.class)

@@ -20,16 +20,12 @@ public class ContaModelDto {
 
     @NotNull
     @NotEmpty
-    private String nconta;
-    @NotNull
-    @NotEmpty
     private String agencia;
     @NotNull
     @Max(value = 99)
     private int dverif;
 
     public ContaModelDto(ContaModel contaModel) {
-        this.nconta = contaModel.getNconta();
         this.agencia = contaModel.getAgencia();
         this.dverif = contaModel.getDverif();
     }
@@ -45,7 +41,6 @@ public class ContaModelDto {
         Optional<ContaModel> contaModel = contaRepository.findBynconta(nconta);
         contaModel.map(alter -> {
             alter.setAgencia(this.getAgencia());
-            alter.setNconta(this.getNconta());
             alter.setDverif(this.getDverif());
             ContaModel updated = contaRepository.save(alter);
             return ResponseEntity.ok().body(updated);
