@@ -33,7 +33,7 @@ public class TaxaImpl implements Taxa {
     @Override
     public Optional<ResponseEntity<ContaModel>> sacarConta(@RequestBody OperacoesModel model) {
         reconhecerTipoConta(model.getNumeroConta());
-        Optional<ContaModel> conta = repository.findBynconta(model.getNumeroConta());
+        Optional<ContaModel> conta = repository.findByNumConta(model.getNumeroConta());
         return conta.map(record -> {
             if (record.getQtdSaques() > getQtdsaques()) {
                 record.setSaldo(record.getSaldo() - model.getValor() - getTaxa());
@@ -53,7 +53,7 @@ public class TaxaImpl implements Taxa {
 
     @Override
     public Optional<ResponseEntity<ContaModel>> depositarConta(@RequestBody OperacoesModel model) {
-        Optional<ContaModel> conta = repository.findBynconta(model.getNumeroConta());
+        Optional<ContaModel> conta = repository.findByNumConta(model.getNumeroConta());
         conta.map(record -> {
             record.setSaldo(record.getSaldo() + model.getValor());
             ContaModel updated = repository.save(record);
@@ -64,7 +64,7 @@ public class TaxaImpl implements Taxa {
 
     @Override
     public Optional<ResponseEntity<ContaModel>> transferirContas(@RequestBody OperacoesModel operacoesModel) {
-        Optional<ContaModel> contaEntrada = repository.findBynconta(operacoesModel.getNumeroConta());
+        Optional<ContaModel> contaEntrada = repository.findByNumConta(operacoesModel.getNumeroConta());
         contaEntrada.map(record -> {
             record.setSaldo(record.getSaldo() + operacoesModel.getValor());
             ContaModel updated = repository.save(record);
@@ -74,7 +74,7 @@ public class TaxaImpl implements Taxa {
     }
 
     public Optional<ResponseEntity<ContaModel>> transferirContasSaida(@RequestBody OperacoesModel mode) {
-        Optional<ContaModel> contaSaida = repository.findBynconta(mode.getNumeroConta());
+        Optional<ContaModel> contaSaida = repository.findByNumConta(mode.getNumeroConta());
         contaSaida.map(record -> {
             record.setSaldo(record.getSaldo() - mode.getValor());
             ContaModel update = repository.save(record);
@@ -85,7 +85,7 @@ public class TaxaImpl implements Taxa {
 
     @Override
     public String reconhecerTipoConta(String nConta) {
-        Optional<ContaModel> conta = repository.findBynconta(nConta);
+        Optional<ContaModel> conta = repository.findByNumConta(nConta);
         conta.map(map -> {
             setTipoconta(map.getTipo());
             setTaxa(tipoconta.getTaxa());

@@ -11,9 +11,7 @@ import java.util.Optional;
 @Repository
 public interface ContaRepository extends JpaRepository<ContaModel, Integer> {
 
-    Optional<ContaModel> findByUsuarioCpf(String cpf);
-
-    Optional<ContaModel> findBynconta(String nconta);
-
-    List<ContaModel> findAllByUsuarioCpf(String cpf);
+    Optional<ContaModel> findByNumConta(String numConta);
+    List<ContaModel> findAllByUserCpf(String cpf);
+    ContaModel getByNumConta (String numConta);
 }

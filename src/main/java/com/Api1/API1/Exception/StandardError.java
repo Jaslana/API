@@ -7,9 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class GlobalErro {
-
-    private String campo;
+public class StandardError {
     private String erro;
 
 }

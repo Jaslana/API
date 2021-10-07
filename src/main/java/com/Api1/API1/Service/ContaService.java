@@ -1,95 +1,111 @@
 package com.Api1.API1.Service;
 
 
-import com.Api1.API1.Dto.ContaModelDto;
-import com.Api1.API1.Exception.ContaJaCadastrada;
-import com.Api1.API1.Exception.ContaNaoEncontradaNconta;
+import com.Api1.API1.Dto.RequestDTO.ContaRequestDTO;
+import com.Api1.API1.Dto.ResponseDTO.*;
+import com.Api1.API1.Exception.ContaJaCadastradaException;
+import com.Api1.API1.Exception.ContaNaoEncontradaException;
 import com.Api1.API1.Model.ContaModel;
 import com.Api1.API1.Model.UsuarioModel;
 import com.Api1.API1.Repository.ContaRepository;
 import com.Api1.API1.Repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
+import lombok.var;
+import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Component;
 
-import javax.transaction.Transactional;
+
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
-@Service
+@Component
+@RequiredArgsConstructor
 public class ContaService {
 
-    //Todos estao retornando com o campo CPF no erro
+    private final ContaRepository contaRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final ModelMapper modelMapper;
 
-    @Autowired
-    private ContaRepository contaRepository;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    public ContaResponseDTO salvarConta(ContaRequestDTO contaRequestDTO) {
+        ContaModel model = modelMapper.map(contaRequestDTO, ContaModel.class);
 
-    public ContaService(ContaRepository contaRepository) {
+        model.setUserCpf(contaRequestDTO.getUserCpf());
+        contaRepository.save(model);
+
+        ContaResponseDTO contaResponse = modelMapper.map(model, ContaResponseDTO.class);
+
+        ContaModel contaExistente = contaRepository.getByNumConta(model.getNumConta());
+
+        if (!Objects.isNull(contaExistente)) {
+            throw new ContaJaCadastradaException("Numero de conta: " + model.getNumConta() +
+                    " ja cadastrada no sistema");
+        }
+
+        return contaResponse;
     }
 
-
-    public ResponseEntity<ContaModel> salvar(ContaModel contaModel, UsuarioModel usuarioModel, String nconta) {
-        ContaModel conta = contaRepository.findBynconta(contaModel.getNconta()).map(busca->{
-//            UsuarioModel usuario = usuarioRepository.findById(usuarioModel.getId().)
-            if(busca.getCodigo() >= 1){
-                throw new ContaJaCadastrada("Conta ja existe", nconta);
-
-            }
-
-            return busca;
-        }).orElseGet(() ->
-
-                contaRepository.save(contaModel));
-        return ResponseEntity.status(HttpStatus.CREATED).body(conta);
-        //campo erro tratar a mensagem de retorno
-        //Retornar o corpo json do usuario que ja existe
-        //Retornar o campo usuario
-        //retornar a qt de saque....posso reutilizar?:
-        //contaModel.setQtdSaques(0);
-        //contaModel.setUsuario(busca.get());
+    public ContaUsuarioResponse consutarNConta(String numConta) {
+        ContaModel model = contaRepository.findByNumConta(numConta).orElseThrow(() ->
+                new ContaNaoEncontradaException("Conta nao encontrado" + numConta));
+        UsuarioModel model1 = usuarioRepository.getByCpf(model.getUserCpf());
+        return ContaUsuarioResponse
+                .builder()
+                .conta( modelMapper.map(model, ContaResponseDTO.class))
+                .usuario(modelMapper.map(model1, UsuarioResponseDTO.class))
+                .build();
     }
 
-
-    public ResponseEntity<ContaModel> consutarNConta(String nconta) {
-
-        ContaModel conta = contaRepository.findBynconta(nconta).orElseThrow(() ->
-                new ContaNaoEncontradaNconta("Conta nao encontrado", nconta));
-
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(conta);
-    }
-
-
-    public List<ContaModel> consultarTodos() {
-        return contaRepository.findAll();
+    public List<ContaResponseDTO> consultarTodos() {
+        return contaRepository.findAll()
+                .stream()
+                .map(this::toContaResponseDTO)
+                .collect(Collectors.toList());
 
         //retornar que nao existe nenhuma conta
     }
 
-    @Transactional
-    public ResponseEntity<ContaModel> atualizar(String nConta, ContaModelDto contaModelDto) {
+    public ContaResponseDTO atualizarConta(String numConta, ContaRequestDTO contaRequestDTO) {
+        contaRequestDTO.setNumConta(numConta);
+        ContaModel model = modelMapper.map(contaRequestDTO, ContaModel.class);
 
-        ContaModel conta = contaRepository.findBynconta(nConta).orElseThrow(() ->
-                new ContaNaoEncontradaNconta("Conta nao encontrado", nConta));
+        contaRepository.findByNumConta(model.getNumConta()).map(map -> {
+            map.setNumConta((numConta));
+            map.setAgencia(model.getAgencia());
+            map.setDverif(model.getDverif());
+            map.setTipo(model.getTipo());
+            ContaModel updated = contaRepository.save(map);
+            return updated;
+        });
+        ContaResponseDTO contaResponse = modelMapper.map(model, ContaResponseDTO.class);
 
-        contaModelDto.atualizar(nConta, contaRepository);
-
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(conta);
-        //Retornar mensagem que o usuario foi atualizado com sucesso
+        return contaResponse;
     }
 
-    public ResponseEntity<ContaModel> deletarConta(String nconta) {
+    public ContaDeleteDTO deletarConta(String numConta) {
 
-        ContaModel conta = contaRepository.findBynconta(nconta).orElseThrow(() ->
-                new ContaNaoEncontradaNconta("Conta nao encontrado", nconta));
+        ContaModel model = contaRepository.findByNumConta(numConta).orElseThrow(() ->
+                new ContaNaoEncontradaException("Conta nao encontrado com o numero de conta : " + numConta));
 
-            contaRepository.delete(conta);
-
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(conta);
-        //retornar mensagem que o usuario foi exluido com sucesso
+        contaRepository.delete(model);
+        ContaResponseDTO contaResponseDTO = modelMapper.map(model, ContaResponseDTO.class);
+        return ContaDeleteDTO.builder()
+                .mensagem("Conta Deletada com sucesso!")
+                .contaDeletada(contaResponseDTO).
+                build();
     }
+
+    public ContaResponseDTO toContaResponseDTO(ContaModel contaModel) {
+
+        var contaResponseDTO = new ContaResponseDTO();
+        contaResponseDTO.setNumConta(contaModel.getNumConta());
+        contaResponseDTO.setSaldo(contaModel.getSaldo());
+        contaResponseDTO.setTipo(contaModel.getTipo());
+        contaResponseDTO.setDverif(contaModel.getDverif());
+        return contaResponseDTO;
+    }
+
 }
 
 

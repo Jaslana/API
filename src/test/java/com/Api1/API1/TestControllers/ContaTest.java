@@ -21,11 +21,11 @@ public class ContaTest {
         ContaService contaController;
         @MockBean
         ContaRepository contaRepository;
-
-        @BeforeEach
-        public void setUp() {
-            this.contaController = new ContaService(contaRepository);
-        }
+//
+//        @BeforeEach
+//        public void setUp() {
+//            this.contaController = new ContaService(contaRepository);
+//        }
 
 
         @Test
@@ -39,14 +39,14 @@ public class ContaTest {
             Mockito.when(contaRepository.save(contaModel)).thenReturn(contaMock);
             Assertions.assertNotNull(contaModel);
             Assertions.assertNotNull(contaMock.getCodigo());
-            Assertions.assertEquals(contaMock.getNconta(), contaMock.getNconta());
+            Assertions.assertEquals(contaMock.getNumConta(), contaMock.getNumConta());
         }
 
         private ContaModel contaPadrao() {
             UsuarioModel usuarioModel =  new UsuarioModel(1, "Lana Carriel", "46860077808",
                     "Rua Major Mariano, Vila Ferrieira, 1512", "14981030177", ContaEnum.FISICA);
 
-            return new ContaModel(1, usuarioModel, "89756983", "5765", 0,
+            return new ContaModel(1, "usuarioModel", "89756983", "5765", 0,
                     1200.0, 18, ContaEnum.FISICA);
         }
 }

@@ -1,80 +1,114 @@
 package com.Api1.API1.Service;
 
 
-import com.Api1.API1.Dto.UsuarioModelDto;
-
-import com.Api1.API1.Exception.ClienteNaoEncontradoCPF;
-import com.Api1.API1.Exception.UsuarioJaCadastrado;
+import com.Api1.API1.Dto.RequestDTO.UsuarioRequestDTO;
+import com.Api1.API1.Dto.ResponseDTO.ContaResponseDTO;
+import com.Api1.API1.Dto.ResponseDTO.UsuarioContasResponse;
+import com.Api1.API1.Dto.ResponseDTO.UsuarioResponseDTO;
+import com.Api1.API1.Dto.ResponseDTO.UsuarioResponseDTODelete;
+import com.Api1.API1.Exception.UsuarioJaCadastradoException;
+import com.Api1.API1.Exception.UsuarioNaoEncontradoException;
+import com.Api1.API1.Model.ContaModel;
 import com.Api1.API1.Model.UsuarioModel;
 import com.Api1.API1.Repository.ContaRepository;
 import com.Api1.API1.Repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import lombok.RequiredArgsConstructor;
+import lombok.var;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import javax.transaction.Transactional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class UsuarioService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final ContaRepository contaRepository;
+    private final ModelMapper modelMapper;
 
-    @Autowired
-    private ContaRepository contaRepository;
+    public UsuarioResponseDTO salvarUsuario(UsuarioRequestDTO usuarioRequestDTO) {
+        UsuarioModel model = modelMapper.map(usuarioRequestDTO, UsuarioModel.class);
+        UsuarioResponseDTO usuarioResponse = modelMapper.map(model, UsuarioResponseDTO.class);
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
+        UsuarioModel usuarioExiste = usuarioRepository.getByCpf(model.getCpf());
+
+        if (!Objects.isNull(usuarioExiste)) {
+            throw new UsuarioJaCadastradoException("Usuario com o CPF: " + model.getCpf()
+                    + " já cadastrado no sistema");
+        }
+
+        usuarioRepository.save(model);
+        return usuarioResponse;
     }
 
-    public ResponseEntity<UsuarioModel> salvar(UsuarioModel usuarioModel, String cpf) {
-        UsuarioModel usuario = usuarioRepository.findByCpf(usuarioModel.getCpf()).map(busca->{
-            if(busca.getId() >= 1){
-                throw new UsuarioJaCadastrado("Usuario ja existe", cpf);
-            }
-            return busca;
-        }).orElseGet(() ->
-            usuarioRepository.save(usuarioModel));
+    public UsuarioContasResponse consultarCpf(String cpf) {
+        UsuarioModel model = usuarioRepository.findByCpf(cpf).orElseThrow(() ->
+                new UsuarioNaoEncontradoException("Usuario nao encontrado com o CPF: " + cpf));
+        List<ContaModel> contas = contaRepository.findAllByUserCpf(cpf);
+        List<ContaResponseDTO> contasresponse = Arrays.asList();
+        contas.forEach(item ->{
+            contasresponse.add(modelMapper.map(item,ContaResponseDTO.class));
+        });
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(usuario);
-        //Retornar o corpo json do usuario que ja existe
+        return UsuarioContasResponse.builder()
+                .usuario(modelMapper.map(model,UsuarioResponseDTO.class))
+                .contas(contasresponse).build();
     }
 
-    public ResponseEntity<UsuarioModel> consutarCpf(String cpf) {
-        UsuarioModel usuarioModel = usuarioRepository.findByCpf(cpf).orElseThrow(() ->
-                new ClienteNaoEncontradoCPF("Usuario nao encontrado", cpf));
-
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(usuarioModel);
-    }
-
-    public List<UsuarioModel> consultarTodos() {
-        return usuarioRepository.findAll();
+    public List<UsuarioResponseDTO> consultarTodos() {
+        return usuarioRepository.findAll()
+                .stream()
+                .map(this::toUsuarioResponseDTO)
+                .collect(Collectors.toList());
     }
 
 
-    @Transactional
-    public ResponseEntity<UsuarioModel> atualizar(String cpf, UsuarioModelDto usuarioModelDto) {
+    public UsuarioResponseDTO atualizarUsuario(String cpf, UsuarioRequestDTO usuarioRequestDTO) {
+        usuarioRequestDTO.setCpf(cpf);
+        UsuarioModel model = modelMapper.map(usuarioRequestDTO, UsuarioModel.class);
 
-        UsuarioModel usuarioModel = usuarioRepository.findByCpf(cpf).orElseThrow(() ->
-                new ClienteNaoEncontradoCPF("Usuario nao encontrado", cpf));
+        usuarioRepository.findByCpf(model.getCpf()).map(map -> {
+            map.setCpf((cpf));
+            map.setNome(model.getNome());
+            map.setFone(model.getFone());
+            map.setEndereco(model.getEndereco());
+            UsuarioModel updated = usuarioRepository.save(map);
+            return  updated;
+        });
+        UsuarioResponseDTO usuarioResponse = modelMapper.map(model, UsuarioResponseDTO.class);
 
-        usuarioModelDto.atualizar(cpf, usuarioRepository);
-
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(usuarioModel);
-        //Retornar mensagem que o usuario foi atualizado com sucesso
+        return usuarioResponse;
     }
 
-    public ResponseEntity<UsuarioModel> delete(String cpf) {
+    public UsuarioResponseDTODelete delete(String cpf) {
 
-        UsuarioModel usuarioModel = usuarioRepository.findByCpf(cpf).orElseThrow(() ->
-                new ClienteNaoEncontradoCPF("Usuario nao encontrado", cpf));
-        usuarioRepository.delete(usuarioModel);
+        UsuarioModel model = usuarioRepository.findByCpf(cpf).orElseThrow(() ->
+                new UsuarioNaoEncontradoException("Usuario nao encontrado com o CPF: " + cpf));
 
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(usuarioModel);
-        //retornar mensagem que o usuario foi exluido com sucesso
+        usuarioRepository.delete(model);
+        UsuarioResponseDTO usuarioResponseDTO = modelMapper.map(model, UsuarioResponseDTO.class);
+        return UsuarioResponseDTODelete.builder()
+                .mensagem("Conta Deletada com sucesso!")
+                .usuarioDeletado(usuarioResponseDTO).
+                build();
+
     }
+
+    public UsuarioResponseDTO toUsuarioResponseDTO(UsuarioModel usuarioModel) {
+
+        var usuarioResponseDTO = new UsuarioResponseDTO();
+        usuarioResponseDTO.setCpf(usuarioModel.getCpf());
+        usuarioResponseDTO.setNome(usuarioModel.getNome());
+        usuarioResponseDTO.setFone(usuarioModel.getFone());
+        usuarioResponseDTO.setEndereco(usuarioModel.getEndereco());
+        return usuarioResponseDTO;
+    }
+
 }
+
 
 
 

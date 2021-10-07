@@ -1,6 +1,7 @@
 package com.Api1.API1.Controller;
 
-import com.Api1.API1.Dto.OperacoesDto;
+import com.Api1.API1.Dto.RequestDTO.OperacoesRequestDTO;
+import com.Api1.API1.Dto.ResponseDTO.OperacoesResponseDTO;
 import com.Api1.API1.Model.OperacoesModel;
 import com.Api1.API1.Service.OperacoesService;
 import lombok.RequiredArgsConstructor;
@@ -22,27 +23,26 @@ public class OperacoesController {
     private OperacoesService operacoesService;
 
     @GetMapping("/extrato/")
-    public ResponseEntity<?> buscarExtrato(String numeroConta) {
-        return operacoesService.buscarExtrato(numeroConta);
+    public ResponseEntity<OperacoesResponseDTO> buscarExtrato(OperacoesRequestDTO operacoesRequestDTO) {
+        return operacoesService.buscarExtrato(operacoesRequestDTO);
     }
 
     @PostMapping("/deposito")
-    public ResponseEntity<OperacoesModel> salvarTransacaoDeposito(@RequestBody @Valid String nconta) {
-        return operacoesService.salvarTransacaoDeposito(nconta);
+    public ResponseEntity<OperacoesResponseDTO> salvarTransacaoDeposito(@RequestBody @Valid OperacoesRequestDTO operacoesRequestDTO) {
+        return operacoesService.salvarTransacaoDeposito(operacoesRequestDTO);
     }
 
-    @PutMapping("/operacoes/transferir")
-    public Optional<Object> transferencias(@RequestBody @Valid OperacoesDto model,
-                                           UriComponentsBuilder uriBuilder) {
-        return operacoesService.transferencias(model, uriBuilder);
-    }
-
-    @PostMapping("/saque")
-    public ResponseEntity<?> salvarTransacaoSaque(@RequestBody @Valid OperacoesModel model,
-                                                  UriComponentsBuilder uriBuilder)
-            throws ExecutionException, InterruptedException, ExecutionException {
-        return operacoesService.salvarTransacaoSaque(model, uriBuilder);
-    }
+//    @PutMapping("/operacoes/transferir")
+//    public Optional<Object> transferencias(@RequestBody @Valid OperacoesRequestDTO operacoesRequestDTO) {
+//        return operacoesService.transferencias(operacoesRequestDTO);
+//    }
+//
+//    @PostMapping("/saque")
+//    public ResponseEntity<?> salvarTransacaoSaque(@RequestBody @Valid OperacoesModel model,
+//                                                  UriComponentsBuilder uriBuilder)
+//            throws ExecutionException, InterruptedException, ExecutionException {
+//        return operacoesService.salvarTransacaoSaque(model, uriBuilder);
+//    }
 
 
 }

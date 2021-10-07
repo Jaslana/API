@@ -1,49 +1,47 @@
 package com.Api1.API1.Controller;
 
-import com.Api1.API1.Dto.ContaModelDto;
+import com.Api1.API1.Dto.RequestDTO.ContaRequestDTO;
+import com.Api1.API1.Dto.ResponseDTO.ContaDeleteDTO;
+import com.Api1.API1.Dto.ResponseDTO.ContaResponseDTO;
+import com.Api1.API1.Dto.ResponseDTO.ContaUsuarioResponse;
 import com.Api1.API1.Model.ContaModel;
-import com.Api1.API1.Model.UsuarioModel;
 import com.Api1.API1.Service.ContaService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
 public class ContaController {
 
-    @Autowired
-    private ContaService contaService;
-
+    private final ModelMapper modelMapper;
+    private final ContaService contaService;
     @PostMapping(path = "/api/contas/salvar")
-    public ResponseEntity<ContaModel> salvar(@RequestBody @Valid ContaModel contaModel, UsuarioModel usuarioModel, String nconta) {
-        return contaService.salvar(contaModel, usuarioModel, nconta);
+    public ContaResponseDTO salvarConta(@RequestBody @Valid ContaRequestDTO contaRequestDTO) {
+        return contaService.salvarConta(contaRequestDTO);
+
     }
 
-    @GetMapping(path = "/api/contas/")
-    public ResponseEntity<?> consutarNConta(@RequestParam String nconta) {
-        return contaService.consutarNConta(nconta);
+    @GetMapping(path = "/api/contas/consultar")
+    public ContaUsuarioResponse consutarNConta(@RequestParam String numConta) {
+        return contaService.consutarNConta(numConta);
     }
 
-    @PostMapping(path = "api/contas/consulta")
-    public List<ContaModel> consultarTodos() {
+    @GetMapping( path = "api/contas")
+    public List<ContaResponseDTO> consultarTodos() {
         return contaService.consultarTodos();
     }
 
     @PutMapping("/api/contas/alterar/")
-    public ResponseEntity<ContaModel> atualizar(@RequestParam String nConta, @RequestBody
-    @Valid ContaModelDto conta) {
-        return contaService.atualizar(nConta, conta);
+    public ContaResponseDTO atualizarConta(@RequestParam String numConta, @RequestBody @Valid ContaRequestDTO contaRequestDTO) {
+        return contaService.atualizarConta(numConta, contaRequestDTO);
     }
-
     @DeleteMapping(value = "api/contas/delete/")
-    public ResponseEntity<?> deletarConta(@RequestParam String nconta) {
-        return contaService.deletarConta(nconta);
+    public ContaDeleteDTO deletarConta (@RequestParam String numConta) {
+        return contaService.deletarConta(numConta);
     }
 }

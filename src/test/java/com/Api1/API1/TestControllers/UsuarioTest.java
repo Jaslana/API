@@ -18,10 +18,10 @@ public class UsuarioTest {
     @MockBean
     UsuarioRepository usuarioRepository;
 
-    @BeforeEach
-    public void setUp() {
-        this.usuarioController = new UsuarioService(usuarioRepository);
-    }
+//    @BeforeEach
+//    public void setUp() {
+//        this.usuarioController = new UsuarioService(usuarioRepository);
+//    }
 
 
     @Test

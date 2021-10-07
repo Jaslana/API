@@ -1,6 +1,5 @@
 package com.Api1.API1.Dto.ResponseDTO;
 
-import com.Api1.API1.Model.ContaEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,11 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UsuarioResponseDTO {
 
-    private String nconta;
-    private String agencia;
-    private Integer qtdSaques;
-    private double saldo;
-    private Integer dverif;
-    private ContaEnum tipo;
-
+    public String cpf;
+    public String nome;
+    public String endereco;
+    public String fone;
 }

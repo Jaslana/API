@@ -10,9 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ContaResponseDTO {
 
-    private String nconta;
+    private String numConta;
     private String agencia;
-    private Integer qtdSaques;
     private double saldo;
     private Integer dverif;
     private ContaEnum tipo;
