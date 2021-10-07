@@ -30,10 +30,6 @@ public class ContaService {
 
     public ContaResponseDTO salvarConta(ContaRequestDTO contaRequestDTO) {
         ContaModel model = modelMapper.map(contaRequestDTO, ContaModel.class);
-
-        model.setUserCpf(contaRequestDTO.getUserCpf());
-        contaRepository.save(model);
-
         ContaResponseDTO contaResponse = modelMapper.map(model, ContaResponseDTO.class);
 
         ContaModel contaExistente = contaRepository.getByNumConta(model.getNumConta());
@@ -43,6 +39,8 @@ public class ContaService {
                     " ja cadastrada no sistema");
         }
 
+        model.setUserCpf(contaRequestDTO.getUserCpf());
+        contaRepository.save(model);
         return contaResponse;
     }
 
