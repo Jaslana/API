@@ -1,12 +1,9 @@
 package com.Api1.API1.Controller;
 
-import com.Api1.API1.Dto.RequestDTO.ContaRequestDTO;
 import com.Api1.API1.Dto.RequestDTO.UsuarioRequestDTO;
-import com.Api1.API1.Dto.ResponseDTO.ContaResponseDTO;
 import com.Api1.API1.Dto.ResponseDTO.UsuarioContasResponse;
 import com.Api1.API1.Dto.ResponseDTO.UsuarioResponseDTO;
 import com.Api1.API1.Dto.ResponseDTO.UsuarioResponseDTODelete;
-import com.Api1.API1.Model.UsuarioModel;
 import com.Api1.API1.Service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;

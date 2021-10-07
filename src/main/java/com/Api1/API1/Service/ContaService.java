@@ -46,7 +46,7 @@ public class ContaService {
 
     public ContaUsuarioResponse consutarNConta(String numConta) {
         ContaModel model = contaRepository.findByNumConta(numConta).orElseThrow(() ->
-                new ContaNaoEncontradaException("Conta nao encontrado" + numConta));
+                new ContaNaoEncontradaException("Conta nao encontrado " + numConta));
         UsuarioModel model1 = usuarioRepository.getByCpf(model.getUserCpf());
         return ContaUsuarioResponse
                 .builder()
