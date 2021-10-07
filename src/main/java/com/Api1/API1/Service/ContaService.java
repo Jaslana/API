@@ -98,6 +98,7 @@ public class ContaService {
 
         var contaResponseDTO = new ContaResponseDTO();
         contaResponseDTO.setNumConta(contaModel.getNumConta());
+        contaResponseDTO.setAgencia(contaModel.getAgencia());
         contaResponseDTO.setSaldo(contaModel.getSaldo());
         contaResponseDTO.setTipo(contaModel.getTipo());
         contaResponseDTO.setDverif(contaModel.getDverif());
