@@ -28,7 +28,7 @@ public class OperacoesController {
     }
 
     @PostMapping("/deposito")
-    public ResponseEntity<OperacoesResponseDTO> salvarTransacaoDeposito(@RequestBody @Valid OperacoesRequestDTO operacoesRequestDTO) {
+    public OperacoesResponseDTO salvarTransacaoDeposito(@RequestBody @Valid OperacoesRequestDTO operacoesRequestDTO) {
         return operacoesService.salvarTransacaoDeposito(operacoesRequestDTO);
     }
 

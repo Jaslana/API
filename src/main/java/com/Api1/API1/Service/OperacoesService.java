@@ -4,12 +4,12 @@ import com.Api1.API1.Dto.RequestDTO.OperacoesRequestDTO;
 import com.Api1.API1.Dto.ResponseDTO.OperacoesResponseDTO;
 import com.Api1.API1.Exception.ContaNaoEncontradaException;
 import com.Api1.API1.Interface.impl.TaxaImpl;
+import com.Api1.API1.Model.ContaModel;
 import com.Api1.API1.Model.OperacoesModel;
 import com.Api1.API1.Repository.ContaRepository;
 import com.Api1.API1.Repository.OperacoesRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -24,6 +24,42 @@ public class OperacoesService extends TaxaImpl {
     private final ContaRepository contaRepository;
     private final OperacoesRepository operacoesRepository;
     private final ModelMapper modelMapper;
+
+    public OperacoesResponseDTO salvarTransacaoDeposito(OperacoesRequestDTO operacoesRequestDTO) {
+        OperacoesModel model = modelMapper.map(operacoesRequestDTO, OperacoesModel.class);
+        OperacoesResponseDTO operacoesResponse = modelMapper.map(model, OperacoesResponseDTO.class);
+
+        OperacoesModel operacoesModel = operacoesRepository.findByNumeroConta(model.getNumeroConta()).orElseThrow(() ->
+                new ContaNaoEncontradaException("Conta nao cadastrada no sistema"));
+        operacoesRepository.save(operacoesModel);
+        depositarConta(operacoesModel);
+
+        return operacoesResponse;
+    }
+
+//    public OperacoesResponseDTO transferencias(OperacoesRequestDTO operacoesRequestDTO) {
+//        OperacoesModel model = modelMapper.map(operacoesRequestDTO, OperacoesModel.class);
+//        OperacoesResponseDTO operacoesResponse = modelMapper.map(model, OperacoesResponseDTO.class);
+//
+//        ContaModel conta1 = contaRepository.findByNumConta(operacoesRequestDTO.getNumeroContaEntrada()).map(record -> {
+//           ContaModel conta2 = contaRepository.findByNumConta(operacoesRequestDTO.getNumeroContaSaida()).map(busca -> {
+//                    OperacoesModel transacaoEntrada = new OperacoesModel(operacoesRequestDTO.getId(), 0, operacoesRequestDTO.getNumeroContaEntrada(), operacoesRequestDTO.getValor(), TipoOperacaoEnum.TransferenciaEntrada, LocalDateTime.now());
+//                    OperacoesModel transacaoSaida = new OperacoesModel(operacoesRequestDTO.getId(), 0, operacoesRequestDTO.getNumeroContaSaida(), operacoesRequestDTO.getValor(), TipoOperacaoEnum.TransferenciaSaida, LocalDateTime.now());
+//                    transferirContas(transacaoEntrada);
+//                    transferirContasSaida(transacaoSaida);
+//                    operacoesRepository.save(transacaoEntrada);
+//                    operacoesRepository.save(transacaoSaida);
+//                    return ResponseEntity.status(HttpStatus.CREATED).body(transacaoSaida);
+//                });
+//            return conta2;
+//        });
+//        if (conta1.isPresent()){
+//            new ExceptionDefault("As isso não existe");
+//        }
+//    return conta1;
+//    //responder com oj diferente
+//        //Revisar esse metodo
+//    }
 
     public ResponseEntity<OperacoesResponseDTO> buscarExtrato(OperacoesRequestDTO operacoesRequestDTO) {
 
@@ -45,55 +81,7 @@ public class OperacoesService extends TaxaImpl {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(resDtoModel);
     }
 
-    public ResponseEntity<OperacoesResponseDTO> salvarTransacaoDeposito(OperacoesRequestDTO operacoesRequestDTO) {
 
-        OperacoesModel reqDtoModel = new OperacoesModel();
-        reqDtoModel.setNumeroConta(operacoesRequestDTO.getNumeroConta());
-        reqDtoModel.setValor(operacoesRequestDTO.getValor());
-        reqDtoModel.setTaxa(operacoesRequestDTO.getTaxa());
-        reqDtoModel.setTipoOperacao(operacoesRequestDTO.getTipoOperacao());
-
-        OperacoesModel operacoesModel = operacoesRepository.findByNumeroConta(reqDtoModel.getNumeroConta()).orElseThrow(() ->
-                new ContaNaoEncontradaException("Conta nao cadastrada no sistema"));
-        operacoesRepository.save(operacoesModel);
-        depositarConta(operacoesModel);
-
-        OperacoesResponseDTO resDtoModel = new OperacoesResponseDTO();
-        resDtoModel.setNumeroConta(operacoesModel.getNumeroConta());
-        resDtoModel.setValor(operacoesModel.getValor());
-        resDtoModel.setTaxa(operacoesModel.getTaxa());
-        resDtoModel.setTipoOperacao(operacoesModel.getTipoOperacao());
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(resDtoModel);
-    }
-
-//    public Optional<OperacoesResponseDTO> transferencias(OperacoesRequestDTO operacoesRequestDTO) {
-//
-//        OperacoesModel reqDtoModel = new OperacoesModel();
-//        reqDtoModel.setNumeroConta(operacoesRequestDTO.getNumeroConta());
-//        reqDtoModel.setValor(operacoesRequestDTO.getValor());
-//        reqDtoModel.setTaxa(operacoesRequestDTO.getTaxa());
-//        reqDtoModel.setTipoOperacao(operacoesRequestDTO.getTipoOperacao());
-//
-//        ContaModel conta1 = contaRepository.findBynconta(operacoesRequestDTO.getNumeroContaEntrada()).map(record -> {
-//           ContaModel conta2 = contaRepository.findBynconta(operacoesRequestDTO.getNumeroContaSaida()).map(busca -> {
-//                    OperacoesModel transacaoEntrada = new OperacoesModel(operacoesRequestDTO.getId(), 0, operacoesRequestDTO.getNumeroContaEntrada(), operacoesRequestDTO.getValor(), TipoOperacaoEnum.TransferenciaEntrada, LocalDateTime.now());
-//                    OperacoesModel transacaoSaida = new OperacoesModel(operacoesRequestDTO.getId(), 0, operacoesRequestDTO.getNumeroContaSaida(), operacoesRequestDTO.getValor(), TipoOperacaoEnum.TransferenciaSaida, LocalDateTime.now());
-//                    transferirContas(transacaoEntrada);
-//                    transferirContasSaida(transacaoSaida);
-//                    operacoesRepository.save(transacaoEntrada);
-//                    operacoesRepository.save(transacaoSaida);
-//                    return ResponseEntity.status(HttpStatus.CREATED).body(transacaoSaida);
-//                });
-//            return conta2;
-//        });
-//        if (conta1.isPresent()){
-//            new ExceptionDefault("As isso não existe");
-//        }
-//    return conta1;
-//    //responder com oj diferente
-//        //Revisar esse metodo
-//    }
 //
 //
 //    public ResponseEntity<OperacoesResponseDTO> salvarTransacaoSaque(OperacoesRequestDTO)
